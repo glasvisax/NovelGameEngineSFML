@@ -9,7 +9,7 @@
 
 Engine::Engine(int argc, char* argv[]) {
 
-	resRoot = "game"; // default game root
+	resRoot = "D:/prog/cpp/GameProject/game"; // default game root
 	
 	for (int i = 0; i < argc; i++) {
 		std::string opt(argv[i]);
@@ -27,8 +27,6 @@ Engine::Engine(int argc, char* argv[]) {
 
 int Engine::start()
 {
-	//Load game name, window's size and fps limit from app.vanilla2d
-	LOGGER->Log("Engine","Loading game info...");
 
 	Config cfg;
 	opts = cfg.parse(resRoot + "/app.vanilla2d");

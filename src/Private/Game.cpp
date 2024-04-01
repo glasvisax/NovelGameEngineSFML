@@ -31,6 +31,7 @@ Game::Game(std::vector<Statement>& _statements, ConfigOptions _opts, std::string
 	{
 		LOGGER->Log("Game", "ERROR: Failed to load /characters/milk_chan.png");
 	}
+
 	MainCharacterSprite.setTexture(MainCharacterTexture);
 	MainCharacterSprite.setPosition(sf::Vector2f(50, 50));
 	MainCharacterSprite.setScale(0.5, 0.5);
@@ -211,15 +212,17 @@ void Game::update() {
 			fadeRect.setFillColor(c);
 		}
 	}
-
+	/*
 	if (debug) {
 		std::stringstream ss;
 		ss << "FPS: " << fpsCounter.getFPS() << "\n" << "statement:" << ip;
 		debugText.setString(ss.str());
 	}
+	*/
 }
 
-void Game::render(sf::RenderWindow& window) {
+void Game::render(sf::RenderWindow& window) 
+{
 	window.draw(background);
 	window.draw(MainCharacterSprite);
 
@@ -232,7 +235,7 @@ void Game::render(sf::RenderWindow& window) {
 	}
 
 
-	if (debug) window.draw(debugText);
+	//if (debug) window.draw(debugText);
 
-	fpsCounter.update();
+	//fpsCounter.update();
 }

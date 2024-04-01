@@ -2,9 +2,9 @@ cmake_minimum_required(VERSION 3.16)
 
 project(GameProject LANGUAGES CXX)
 
-FILE(GLOB_RECURSE headers src/Public/*.h)
+FILE(GLOB_RECURSE headers src/Public/*.h src/Public/GUI/*.h)
 
-FILE(GLOB_RECURSE sources src/Private/*.cpp src/*.cpp)
+FILE(GLOB_RECURSE sources src/Private/*.cpp src/*.cpp src/Private/GUI/*.cpp)
 
 set(SFML_STATIC_LIBRARIES TRUE)
 
@@ -20,6 +20,6 @@ target_link_libraries(Main sfml-system sfml-window sfml-graphics sfml-network sf
 
 target_include_directories(Main PUBLIC D:/SFML/install/include)
 
-target_include_directories(Main PUBLIC src/Private PUBLIC  src/Public)
+target_include_directories(Main PUBLIC src/Private PUBLIC src/Public)
 
 source_group(TREE D:/prog/cpp/GameProject/src FILES ${sources} ${headers})

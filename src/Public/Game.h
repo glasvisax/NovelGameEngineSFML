@@ -33,7 +33,6 @@ private:
 	std::vector<Statement>& statements;
 
 	sf::RectangleShape fadeRect;
-	//sf::RectangleShape textRect;
 	sf::RectangleShape test;
 
 	sf::Sprite TextBoxSprite;
