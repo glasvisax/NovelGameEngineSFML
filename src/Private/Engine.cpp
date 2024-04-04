@@ -27,14 +27,12 @@ Engine::Engine(int argc, char* argv[]) {
 
 int Engine::start()
 {
-
 	Config cfg;
 	opts = cfg.parse(resRoot + "/app.vanilla2d");
 
 	LOGGER->Log("Engine","App Name: %s",opts.title.c_str());
 	LOGGER->Log("Engine","Window Size: %d x %d", opts.width, opts.height);
 	LOGGER->Log("Engine","FPS Limit: %d", opts.fps);
-
 
 	//Parse game script
 	LOGGER->Log("Engine","Parsing game script...");
@@ -63,13 +61,13 @@ int Engine::start()
 		sf::Event event;
 		while(window.pollEvent(event)) {
 
-			//If Close button is clicked, exit
+			//If Close Button is clicked, exit
 			if (event.type == sf::Event::Closed) {
 				window.close();
 			}
 
 			//Let game handle all other events
-			game.handleInput(event);
+			game.handleInput(event, window);
 		}
 
 		//Update game logic, animations

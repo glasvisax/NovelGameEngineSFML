@@ -10,15 +10,23 @@ set(SFML_STATIC_LIBRARIES TRUE)
 
 set(SFML_DIR "D:/SFML/install/lib/cmake/SFML")
 
+set(THOR_ROOT "D:/Thor/install")
+
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "D:/Thor/install/cmake/Modules")
+
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/exec)
 
 add_executable(Main ${sources} ${headers})
 
 find_package(SFML 2.5 COMPONENTS system window graphics network audio REQUIRED)
 
-target_link_libraries(Main sfml-system sfml-window sfml-graphics sfml-network sfml-audio)
+find_package(Thor 2 MODULE REQUIRED)
+
+target_link_libraries(Main sfml-system sfml-window sfml-graphics sfml-network sfml-audio ${THOR_LIBRARY})
 
 target_include_directories(Main PUBLIC D:/SFML/install/include)
+
+target_include_directories(Main PUBLIC ${THOR_INCLUDE_DIR})
 
 target_include_directories(Main PUBLIC src/Private PUBLIC src/Public)
 

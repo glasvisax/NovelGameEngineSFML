@@ -10,11 +10,12 @@
 #include <codecvt>
 
 
+
 Game::Game(std::vector<Statement>& _statements, ConfigOptions _opts, std::string _root) 
 	: statements(_statements)
 	, opts(_opts)
-	, root(_root) 
-{
+	, root(_root) {
+
 	if (!TextBoxTexture.loadFromFile(root + "/text_box/text_box1.png"))
 	{
 		LOGGER->Log("Game", "ERROR: Failed to load /text_box/text_box1.png");
@@ -39,9 +40,6 @@ Game::Game(std::vector<Statement>& _statements, ConfigOptions _opts, std::string
 	fadeRect.setPosition(sf::Vector2f(0, 0));
 	fadeRect.setFillColor(sf::Color::Black);
 
-	test.setPosition(sf::Vector2f(10, 10));
-	test.setSize(sf::Vector2f(20, 20));
-	test.setFillColor(sf::Color::Black);
 
 	LOGGER->Log("Game", "Got resRoot from Engine: '%s'", root.c_str());
 
@@ -52,18 +50,28 @@ Game::Game(std::vector<Statement>& _statements, ConfigOptions _opts, std::string
 		text.setFillColor(sf::Color::Black);
 		text.setPosition(TextBoxSprite.getPosition() + sf::Vector2f(30, 40));
 		text.setCharacterSize(24);
-		debugText.setFont(textFont);
 	}
 
-	debugText.setPosition(sf::Vector2f(5, 5));
-	debugText.setFillColor(sf::Color::Black);
-	debugText.setCharacterSize(18);
-	
-	nextStatement();
+
+	backgroundTex.create(opts.width, opts.height);
+
+	sf::Uint8* pixels = new sf::Uint8[opts.width * opts.height * 4]; // RGBA (4 канала цвета)
+	memset(pixels, 255, opts.width * opts.height * 4);
+	backgroundTex.update(pixels);
+
+	background.setTexture(backgroundTex);
+	delete[] pixels;
+
+	main_menu.SetPosition(sf::Vector2f(opts.width / 2, (opts.height / 2) - 3 * 30));
+	GUI::Button& play = main_menu.AddButton("Play", textFont, GUI::style::save, 20, sf::Vector2f(opts.width / 3, 50.0f));
+	play.bind_on_click(this, &Game::OnPlay);
+	main_menu.AddButton("Options", textFont, GUI::style::save, 20, sf::Vector2f(opts.width / 3, 50.0f));
+	main_menu.AddButton("Exit", textFont, GUI::style::save, 20, sf::Vector2f(opts.width / 3, 50.0f));
+
 }
 
-void Game::handleInput(sf::Event e) {
-
+void Game::handleInput(sf::Event e, sf::RenderWindow& window)
+{
 	//Show next text on mouse click
 	if (e.type == sf::Event::MouseButtonReleased && delay == 0 && !fadeOn) {
 		nextStatement();
@@ -72,9 +80,12 @@ void Game::handleInput(sf::Event e) {
 	if (e.type == sf::Event::KeyReleased && e.key.code == sf::Keyboard::F3) {
 		debug = !debug;
 	}
+
+	main_menu.handleEvents(e, window);
 }
 
-void Game::nextStatement() {
+void Game::nextStatement() 
+{
 	//Stop if EOV (end-of-vector)
 	if (ip + 1 == statements.size()) return;
 
@@ -165,7 +176,13 @@ void Game::nextStatement() {
 	}
 }
 
-void Game::update() {
+void Game::OnPlay()
+{
+	play = true;
+}
+
+void Game::update() 
+{
 
 	//Text printing animation
 	if (textClock.getElapsedTime().asMilliseconds() > 30) {
@@ -176,7 +193,7 @@ void Game::update() {
 			std::wstring newStr = text.getString().toWideString();
 			newStr += textStr[textPos];
 			sf::String newsfStr(newStr);
-			sf::String wrappedStr = Utils::wrapText(newsfStr, static_cast<unsigned int>(TextBoxTexture.getSize().x), textFont, 24.f);
+			sf::String wrappedStr = Utils::wrapText(newsfStr, static_cast<unsigned int>(TextBoxTexture.getSize().x - 150), textFont, 24.f);
 			text.setString(wrappedStr);
 		}
 
@@ -191,9 +208,6 @@ void Game::update() {
 
 	if (fadeOn) {
 		sf::Color c = fadeRect.getFillColor();
-
-		//Change fadeRect alpha
-
 
 		//If fade animation is finished, continue executing statements
 		if (fade < 0 && fade + c.a < 0) {
@@ -212,17 +226,20 @@ void Game::update() {
 			fadeRect.setFillColor(c);
 		}
 	}
-	/*
-	if (debug) {
-		std::stringstream ss;
-		ss << "FPS: " << fpsCounter.getFPS() << "\n" << "statement:" << ip;
-		debugText.setString(ss.str());
-	}
-	*/
+
 }
 
 void Game::render(sf::RenderWindow& window) 
 {
+
+	window.draw(background);
+
+	if (!play) 
+	{
+		main_menu.render(window);
+	}
+	//main_menu.draw(window);
+	/*
 	window.draw(background);
 	window.draw(MainCharacterSprite);
 
@@ -238,4 +255,5 @@ void Game::render(sf::RenderWindow& window)
 	//if (debug) window.draw(debugText);
 
 	//fpsCounter.update();
+	*/
 }

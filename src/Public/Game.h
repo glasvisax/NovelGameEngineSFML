@@ -9,19 +9,21 @@
 #include <Utils.h>
 
 #include <vector>
+#include <GUI/Menu.h>
 
 class Game
 {
 public:
-
-	void handleInput(sf::Event e);
+	void handleInput(sf::Event e, sf::RenderWindow& window);
 	void render(sf::RenderWindow& window);
 	void update();
 	Game(std::vector<Statement>&, ConfigOptions, std::string);
 	void nextStatement();
 
+	void OnPlay();
+
 private:
-	ConfigOptions opts;
+	const ConfigOptions opts;
 	std::string root;
 	std::wstring textStr;
 
@@ -50,13 +52,21 @@ private:
 	sf::Clock textClock;
 	sf::Clock delayClock;
 	
-	std::size_t textPos = 0;
-	std::size_t ip = -1; // Like instruction pointer
+	size_t textPos = 0;
+	size_t ip = -1; // Like instruction pointer
 
+	GUI::Menu main_menu;
+
+	//GUI::Menu escape_menu;
+	
 	int fade = 0; // if it is fade out, then fade < 0, if fade in - fade > 0
 	int delay = 0;
 	bool hideText = false;
 	bool fadeOn = false;
 	bool debug = false;
+
+	bool play = 0;
+
+
 };
 
