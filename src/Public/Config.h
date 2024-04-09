@@ -1,17 +1,20 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
-struct ConfigOptions {
+struct ConfigOptions 
+{
 	int width;
 	int height;
 	std::string title;
-	int fps;
+	std::string code_file;
+	std::vector<std::string> content_folders;
 };
 
 class Config
 {
 public:
-	ConfigOptions parse(std::string filename);
+	ConfigOptions Parse(std::string filename);
 };
 

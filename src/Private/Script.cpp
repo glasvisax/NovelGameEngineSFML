@@ -1,12 +1,12 @@
 #include "Script.h"
+#include <SFML/Graphics.hpp>
 #include <iostream>
 #include <fstream>
 #include <sstream>
-#include <locale>
 #include <codecvt>
+#include <locale.h>
 
-#include "Logger.h"
-#include "Utils.h"
+
 
 bool Script::open(std::string filename) {
 	m_file.open(filename);
@@ -16,7 +16,7 @@ bool Script::open(std::string filename) {
 std::vector<Statement> Script::parse()
 {
 	//Thanks to nmcf for next line! (http://www.cyberforum.ru/members/469738.html)
-	m_file.imbue(locale(locale(), new std::codecvt_utf8<wchar_t, 0x10ffffUL, std::codecvt_mode::consume_header>));
+	m_file.imbue(std::locale(std::locale(), new std::codecvt_utf8<wchar_t, 0x10ffffUL, std::codecvt_mode::consume_header>));
 
 	std::vector<Statement> v;
 
@@ -66,16 +66,12 @@ std::vector<Statement> Script::parse()
 		} else if (type == L"fade") {
 			s.type = StatementType::FADE;
 		} else {
-			LOGGER->Log("Script", "WARNING: unknown script token at line %d", line);
 			continue;
 		}
 
 		//Push the statement into vector
 		v.push_back(s);
 	}
-
-
-	LOGGER->Log("Script", "Finished parsing %d lines in %d ms", line+1, clock.getElapsedTime().asMilliseconds());
 
 	//Return vector to engine.
 	return v;

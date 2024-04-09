@@ -278,7 +278,7 @@ void GUI::Button::update(sf::Event& e, sf::RenderWindow& window)
             if(mouseInButton)
             {
                 m_btnstate = GUI::state::clicked;
-                if (m_OnClickListener != nullptr) m_OnClickListener();
+                
             }
 
             else
@@ -298,7 +298,7 @@ void GUI::Button::update(sf::Event& e, sf::RenderWindow& window)
         {
             if(mouseInButton)
             {
-                m_btnstate = GUI::state::hovered;
+                m_btnstate = GUI::state::released;
             }
 
             else
@@ -331,11 +331,30 @@ void GUI::Button::update(sf::Event& e, sf::RenderWindow& window)
         m_text.setColor(m_textClicked);
     }
     break;
+    case GUI::state::released:
+    {
+        bIsClicked = true;
+        bool check = m_OnClickListener == nullptr;
+        m_button.setFillColor(m_bgHover);
+        m_text.setColor(m_textHover);
+    }
+    break;
     }
 }
 
 void GUI::Button::draw(sf::RenderTarget& target,sf::RenderStates states) const
 {
+
+    target.draw(m_button, states);
+    target.draw(m_text, states);
+    bool check = bIsClicked && m_OnClickListener != nullptr;
+    if (check)
+    { 
+        m_OnClickListener(); 
+        bIsClicked = false;
+    }
+
+    /*
     switch(m_style)
     {
         case GUI::style::none:
@@ -369,4 +388,5 @@ void GUI::Button::draw(sf::RenderTarget& target,sf::RenderStates states) const
         default:
             break;
     }
+    */
 }

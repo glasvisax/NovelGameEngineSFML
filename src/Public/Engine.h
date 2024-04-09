@@ -1,22 +1,15 @@
 #pragma once
 
 #include <SFML/Graphics.hpp>
-#include "Script.h"
-#include "Game.h"
-#include "Config.h"
-#include <vector>
+#include <string>
 
 class Engine
 {
 public:
-	int start();
-	Engine(int argc, char* argv[]);
+	int Start();
+	Engine();
 
 private:
-	sf::RenderWindow window;
-	std::vector<Statement> statements;
-
-	ConfigOptions opts;
-	std::string resRoot;
+	std::string Root;
 };
 

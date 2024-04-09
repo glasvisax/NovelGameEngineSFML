@@ -1,6 +1,3 @@
-#include <SFML/Graphics.hpp>
-#include <iostream>
-#include <iostream> // подключаем, чтобы посмотреть на врем€ в консоли
 
 /*
 using namespace sf;
@@ -54,18 +51,10 @@ int main()
 }
 */
 
-#include "Logger.h"
 #include "Engine.h"
 
-int main(int argc, char* argv[])
+int main()
 {
-	LOGGER->Log("Main", "STARTUP");
-
-	LOGGER->Log("Main", "Creating engine instance...");
-	Engine engine(argc, argv);
-
-	LOGGER->Log("Main", "Starting game engine...");
-
-	//Nothing speical, just starting the fun!
-	return engine.start();
+	Engine engine;
+	return engine.Start();
 }

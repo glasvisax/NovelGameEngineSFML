@@ -24,10 +24,10 @@ find_package(Thor 2 MODULE REQUIRED)
 
 target_link_libraries(Main sfml-system sfml-window sfml-graphics sfml-network sfml-audio ${THOR_LIBRARY})
 
-target_include_directories(Main PUBLIC D:/SFML/install/include)
+target_include_directories(Main PUBLIC ${SFML_INCLUDE_PATH})
 
 target_include_directories(Main PUBLIC ${THOR_INCLUDE_DIR})
 
-target_include_directories(Main PUBLIC src/Private PUBLIC src/Public)
+target_include_directories(Main PRIVATE src/Private PUBLIC src/Public)
 
 source_group(TREE D:/prog/cpp/GameProject/src FILES ${sources} ${headers})

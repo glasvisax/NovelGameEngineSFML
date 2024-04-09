@@ -4,21 +4,22 @@
 
 namespace GUI
 {
-    class Menu
+    class MenuBox : public sf::Drawable
     {
     public:
-        Menu() {};
+        MenuBox() {};
 
         GUI::Button& AddButton(std::string text, sf::Font& font, sf::Uint32 style, unsigned int font_size, sf::Vector2f size, float space = 10.0f);
 
-        
-        void handleEvents(sf::Event& event, sf::RenderWindow& window);
+        void HandleInput(sf::Event& event, sf::RenderWindow& window);
 
-        void render(sf::RenderWindow& window);
+        void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
         
         void SetPosition(sf::Vector2f pos) { m_pos = pos; }
 
-        sf::Vector2f GetPosition() { return m_pos; }
+        sf::Vector2f GetPosition() const { return m_pos; }
+
+        Button& GetButtonByText(const std::string& text);
 
     private:
         sf::Vector2f m_pos;

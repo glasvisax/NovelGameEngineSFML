@@ -1,9 +1,8 @@
-#include "GUI/Menu.h"
-
+#include "GUI/MenuBox.h"
+#include <cassert>
 namespace GUI
 {
-
-    GUI::Button& Menu::AddButton(std::string text, sf::Font& font, sf::Uint32 style, unsigned int font_size, sf::Vector2f size, float space) {
+    GUI::Button& MenuBox::AddButton(std::string text, sf::Font& font, sf::Uint32 style, unsigned int font_size, sf::Vector2f size, float space) {
         sf::Vector2f position;
         if (!m_buttons.empty()) {
             position.x = m_buttons.back().getPosition().x;
@@ -18,7 +17,7 @@ namespace GUI
     }
 
 
-    void Menu::handleEvents(sf::Event& event, sf::RenderWindow& window)
+    void MenuBox::HandleInput(sf::Event& event, sf::RenderWindow& window)
     {
         for (auto& Button : m_buttons)
         {
@@ -26,11 +25,23 @@ namespace GUI
         }
     }
 
-    void Menu::render(sf::RenderWindow& window)
+    void MenuBox::draw(sf::RenderTarget& window, sf::RenderStates states) const
     {
         for (const auto& Button : m_buttons)
         {
             window.draw(Button);
         }
     }
+
+    Button& MenuBox::GetButtonByText(const std::string& text)
+    {
+        for (Button& b : m_buttons) {
+            if (std::string(b.GetText().getString()) == text) {
+                return b;
+            }
+        }
+        assert(false && "Not found button");
+        return Button();
+    }
+
 }

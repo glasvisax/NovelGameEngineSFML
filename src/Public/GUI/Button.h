@@ -27,7 +27,8 @@ namespace GUI
         {
             normal = 0,
             hovered = 1,
-            clicked = 2
+            clicked = 2,
+            released = 3
         };
     };
 
@@ -36,7 +37,6 @@ namespace GUI
         public:
             Button();
             Button(std::string s, sf::Font& font, sf::Vector2f position, sf::Uint32 style, sf::Vector2f size, unsigned int font_size);
-            //Button(std::string s, sf::Font& font, sf::Vector2f position, sf::Uint32 style);
 
             ~Button();
 
@@ -49,33 +49,28 @@ namespace GUI
             void setBorderColor(sf::Color border){m_border = border;};
             void setBorderThickness(float t){m_borderThickness = t;};
             void setBorderRadius(float r){m_borderRadius = r;};
-            void setPosition(sf::Vector2f position); // {m_position = position;}; код говна
+            void setPosition(sf::Vector2f position);
             void setSize(unsigned int size);
-            void setText(std::string s)
-            {
-                m_text.setString(s);
-                //m_shadow = m_text;
-            };
+            void setText(std::string s) { m_text.setString(s); };
             void setStyle(sf::Uint32 style);
             void setFont(sf::Font& font);
 
-            sf::Vector2f getPosition(){return m_position;};
-            sf::Vector2f getDimensions(){return sf::Vector2f(m_button.getGlobalBounds().width, m_button.getGlobalBounds().height);};
-            sf::Uint32 getState(){return m_btnstate;};
+            sf::Vector2f getPosition() { return m_position; };
+            sf::Vector2f getDimensions() { return sf::Vector2f(m_button.getGlobalBounds().width, m_button.getGlobalBounds().height); };
+            sf::Uint32 getState() { return m_btnstate; };
+            sf::Text GetText() { return m_text; }
 
             void update(sf::Event& e, sf::RenderWindow& window);
 
             template <typename T>
-            void bind_on_click(T* object, void (T::* method)()) 
+            void BindOnClick(T* object, void (T::* method)()) 
             {
                 m_OnClickListener = [object, method]() { (object->*method)(); };
             }
 
         private:
 
-            void init();
-
-            virtual void draw(sf::RenderTarget& target,sf::RenderStates states) const;
+           virtual void draw(sf::RenderTarget & target, sf::RenderStates states) const;
 
         private:
 
@@ -99,7 +94,9 @@ namespace GUI
             unsigned int m_fontSize;
             sf::Text m_text;
 
-            std::function<void()> m_OnClickListener = nullptr;
+            std::function<void()> m_OnClickListener;
+            mutable bool bIsClicked = false;
+
     };
 };
 
