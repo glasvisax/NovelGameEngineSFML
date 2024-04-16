@@ -1,63 +1,76 @@
 #include <SFML/Graphics.hpp>
 #include <Thor/Shapes.hpp>
+
 #include <string>
+#include <functional>
 
 namespace GUI
 {
     class DialogBox : public sf::Drawable {
-    public:
 
+    public:
         DialogBox();
-    public:
 
-        void SetCharacterSize(float size);
-
-        void SetText(const std::wstring& text);
-
-        void SetCharacterName(const std::wstring& name);
-
-        void SetTextFont(const sf::Font& font);
-
-        void SetTextColor(const sf::Color& text_color = sf::Color::Black);
-
-        void SetPosition(sf::Vector2f pos);
-        
         void SetBackgroundShape(const sf::Vector2f& background_size,
-            float corner_radius = 10.0f,
+            const sf::Vector2f& position,
+            float corner_radius = 10.0f, 
             const sf::Color& background_color = sf::Color(128, 128, 128, 200),
             float outline_thickness = 0.0f,
             const sf::Color& outline_color = sf::Color::Black);
 
-        void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
+        void draw(sf::RenderTarget& window, sf::RenderStates states) const override;
 
-        void update();
+        void HandleInput(sf::Event& e, sf::RenderWindow& window);
 
-        void ToggleCharacter();
+    public:
+
+        void SetCharacterSize(float size);
+
+        void SetText(const std::wstring& text, const std::wstring& name = L"__NOT__EXIST__");
+
+        void SetFont(const sf::Font& font);
+
+        void SetTextColor(const sf::Color& text_color = sf::Color::Black);
         
         void SetTimeToAddChar(float time) { TimeToAddChar = time; }
+
+    public:
+
+
+        void SetChoices(const std::vector<std::wstring>& responses);
+
+        int GetSelectedResponse() const { return CurrentResponse; }
+
     private:
 
+        bool bChoise = false;
         sf::Font Font;
-        sf::Text Text;
+        mutable sf::Text Text;
         sf::Text CharacterName;
         std::wstring WideText;
 
         sf::ConvexShape Background;
         sf::Vector2f BackgroundSize;
-        sf::Clock TextClock;
-        size_t TextPos = 0;
+        mutable sf::Clock TextClock;
+        mutable size_t TextPos = 0;
 
         float TimeToAddChar = 30.0f;
         bool bHaveName = false;
 
+    public:
+
+        std::vector<std::wstring> Responses;
+        mutable std::vector<sf::Text> ResponseTexts;
+        int CurrentResponse = -1;
+
+        template <typename T>
+        void BindOnChoose(T* object, void (T::* method)(unsigned int))
+        {
+            OnChooseListener = [object, method](unsigned int value) { (object->*method)(value); };
+        }
     private:
 
-        void LocateText();
-        sf::String WrapText(
-            sf::String string, 
-            unsigned width, 
-            const sf::Font& font, 
-            unsigned charicterSize, 
-            bool bold );
+        std::function<void(unsigned int)> OnChooseListener;
+        int WrapText(sf::String& string, unsigned width, const sf::Font& font, unsigned charicter_size, bool bold) const;
     };
 }

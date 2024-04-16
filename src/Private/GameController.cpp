@@ -20,21 +20,14 @@ void GameController::SetSceneController(SceneController* scene)
 
 void GameController::HandleInput(sf::Event e)
 {
-	
 
-	Scene->HandleInput(e);
-	/*
-	//Show next text on mouse click
-	if (e.type == sf::Event::MouseButtonReleased && delay == 0 && !bFadeOn) {
-		nextStatement();
-	}
-
-	MainMenu.HandleInput(e, window);
-	*/
 }
 
 void GameController::NextStatement() 
 {
+
+
+
 	/*
 	//Stop if EOV (end-of-vector)
 	if (ip + 1 == statements.size()) return;
@@ -128,9 +121,13 @@ void GameController::BeginPlay()
 {
 	assert(Scene && "SceneController is nullptr");
 
-	Scene->GetMainMenu().GetButtonByText("Play").BindOnClick(this, &GameController::OnGameStart);
-	//Scene->GetMainMenu().GetButtonByText("Options").BindOnClick(this, &GameController::...);
-	Scene->GetMainMenu().GetButtonByText("Exit").BindOnClick(this, &GameController::OnExitGame);
+	auto play_btn = Scene->GetMainMenu().GetButtonByText("Play");
+	if(play_btn) { play_btn->BindOnClick(this, &GameController::OnGameStart); }
+
+	//Scene->GetMainMenu().GetButtonByText("Options").BindOnClick(this, ...);
+
+	auto exit_btn = Scene->GetMainMenu().GetButtonByText("Exit");
+	if(exit_btn) { exit_btn->BindOnClick(this, &GameController::OnGameExit); }
 }
 
 void GameController::Tick(float DeltaTime)
@@ -143,9 +140,19 @@ void GameController::OnGameStart()
 	Scene->ShowGame();
 }
 
-void GameController::OnExitGame()
+void GameController::OnGameExit()
 {
 	Window.close();
+}
+
+void GameController::OnNextFrame()
+{
+
+}
+
+void GameController::OnChoose(unsigned int choise)
+{
+
 }
 
 void GameController::Update() 

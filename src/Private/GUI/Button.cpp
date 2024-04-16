@@ -1,19 +1,12 @@
 #include <GUI/Button.h>
 
-GUI::Button::Button()
+GUI::Button::Button(std::wstring s, sf::Font& font, sf::Vector2f position, sf::Uint32 style, sf::Vector2f size, unsigned int font_size)
 {
 
-}
-
-GUI::Button::Button(std::string s, sf::Font& font, sf::Vector2f position, sf::Uint32 style, sf::Vector2f size, unsigned int font_size)
-{
-    //set position
     m_position = position;
 
-    // Set initial state
     m_btnstate = GUI::state::normal;
 
-    //set Button style
     m_style = style;
 
     switch (m_style)
@@ -70,47 +63,29 @@ GUI::Button::Button(std::string s, sf::Font& font, sf::Vector2f position, sf::Ui
         break;
     }
 
-    // Set up text
     m_text.setString(s);
     m_text.setFont(font);
-    m_text.setCharacterSize(font_size); // Set font size directly
-    m_text.setOrigin(m_text.getGlobalBounds().width / 2, m_text.getGlobalBounds().height / 2);
+    m_text.setCharacterSize(font_size); 
     m_text.setColor(m_textNormal);
-
-    // Set size and other defaults
     m_size = size;
     m_borderRadius = 5.f;
     m_borderThickness = 0.f;
+    m_fontSize = font_size;
 
-    // Create button shape
     m_button = thor::Shapes::roundedRect(m_size, m_borderRadius, m_bgNormal, m_borderThickness, m_border);
     m_button.setOrigin(m_size.x / 2, m_size.y / 2); // Center origin
 
-    // Set positions
-    setPosition(position); // Use setPosition to update element positions
 }
 
-GUI::Button::~Button()
-{
-    //dtor
-}
-
-void GUI::Button::setPosition(sf::Vector2f position)
+void GUI::Button::setPosition(const sf::Vector2f& position)
 {
     m_position = position;
 
-    // Update the button shape's position
     m_button.setPosition(m_position);
 
-    // Update the text position (centered within the button)
-    sf::Vector2f textPosition = sf::Vector2f(
-        m_position.x,
-        m_position.y - m_text.getGlobalBounds().height / 2
-    );
-    m_text.setPosition(textPosition);
+    m_text.setPosition(sf::Vector2f(m_position.x - (m_text.getGlobalBounds().width/2), m_position.y - (m_text.getGlobalBounds().height)));
 
 }
-
 void GUI::Button::setSize(unsigned int size)
 {
     m_fontSize = size;
@@ -122,7 +97,6 @@ void GUI::Button::setSize(unsigned int size)
 
 void GUI::Button::setStyle(sf::Uint32 style)
 {
-    //set Button style
     m_style = style;
 
     switch(m_style)
@@ -180,75 +154,9 @@ void GUI::Button::setStyle(sf::Uint32 style)
     }
 }
 
-void GUI::Button::setFont(sf::Font& font)
-{
-    m_text.setFont(font);
-}
 
 void GUI::Button::update(sf::Event& e, sf::RenderWindow& window)
 {
-    /*
-    //perform updates for settings from user
-    switch(m_style)
-    {
-        case GUI::style::none:
-        {
-            m_size = sf::Vector2f(m_text.getGlobalBounds().width * 1.5f, m_text.getGlobalBounds().height * 1.75f);
-            m_button = thor::Shapes::roundedRect(m_size, m_borderRadius, m_bgNormal, m_borderThickness, m_border);
-            m_button.setOrigin(m_button.getGlobalBounds().width/2, m_button.getGlobalBounds().height/2);
-            m_button.setPosition(m_position);
-            m_text.setOrigin(m_text.getGlobalBounds().width/2, m_text.getGlobalBounds().height/2);
-            sf::Vector2f textPosition = sf::Vector2f(m_button.getPosition().x, m_button.getPosition().y - m_text.getGlobalBounds().height/2);
-            m_text.setPosition(textPosition);
-            m_text.setColor(m_textNormal);
-        }
-        break;
-
-        case GUI::style::save:
-        {
-            m_size = sf::Vector2f(m_text.getGlobalBounds().width * 1.5f, m_text.getGlobalBounds().height * 1.75f);
-            m_button = thor::Shapes::roundedRect(m_size, m_borderRadius, m_bgNormal, m_borderThickness, m_border);
-            m_button.setOrigin(m_button.getGlobalBounds().width/2, m_button.getGlobalBounds().height/2);
-            m_button.setPosition(m_position);
-            m_text.setOrigin(m_text.getGlobalBounds().width/2, m_text.getGlobalBounds().height/2);
-            sf::Vector2f textPosition = sf::Vector2f(m_button.getPosition().x, m_button.getPosition().y - m_text.getGlobalBounds().height/2);
-            m_text.setPosition(textPosition);
-            m_text.setColor(m_textNormal);
-        }
-        break;
-
-        case GUI::style::cancel:
-        {
-           m_size = sf::Vector2f(m_text.getGlobalBounds().width * 1.5f, m_text.getGlobalBounds().height * 1.75f);
-            m_button = thor::Shapes::roundedRect(m_size, m_borderRadius, m_bgNormal, m_borderThickness, m_border);
-            m_button.setOrigin(m_button.getGlobalBounds().width/2, m_button.getGlobalBounds().height/2);
-            m_button.setPosition(m_position);
-            m_text.setOrigin(m_text.getGlobalBounds().width/2, m_text.getGlobalBounds().height/2);
-            sf::Vector2f textPosition = sf::Vector2f(m_button.getPosition().x, m_button.getPosition().y - m_text.getGlobalBounds().height/2);
-            m_text.setPosition(textPosition);
-            m_text.setColor(m_textNormal);
-        }
-        break;
-
-        case GUI::style::clean:
-        {
-            m_size = sf::Vector2f(m_text.getGlobalBounds().width * 1.5f, m_text.getGlobalBounds().height * 1.75f);
-            m_button = thor::Shapes::roundedRect(m_size, m_borderRadius, m_bgNormal, m_borderThickness, m_border);
-            m_button.setOrigin(m_button.getGlobalBounds().width/2, m_button.getGlobalBounds().height/2);
-            m_button.setPosition(m_position);
-            m_text.setOrigin(m_text.getGlobalBounds().width/2, m_text.getGlobalBounds().height/2);
-            sf::Vector2f textPosition = sf::Vector2f(m_button.getPosition().x, m_button.getPosition().y - m_text.getGlobalBounds().height/2);
-            m_text.setPosition(textPosition);
-            m_text.setColor(m_textNormal);
-        }
-        break;
-
-        default:
-            break;
-    }
-    */
-
-    //perform updates for user mouse interactions
     sf::Vector2i m_mousePosition = sf::Mouse::getPosition(window);
 
     bool mouseInButton =    m_mousePosition.x >= m_button.getPosition().x - m_button.getGlobalBounds().width/2
@@ -306,6 +214,7 @@ void GUI::Button::update(sf::Event& e, sf::RenderWindow& window)
                 m_btnstate = GUI::state::normal;
             }
         }
+
         }
     }
 
@@ -334,7 +243,6 @@ void GUI::Button::update(sf::Event& e, sf::RenderWindow& window)
     case GUI::state::released:
     {
         bIsClicked = true;
-        bool check = m_OnClickListener == nullptr;
         m_button.setFillColor(m_bgHover);
         m_text.setColor(m_textHover);
     }
@@ -342,9 +250,8 @@ void GUI::Button::update(sf::Event& e, sf::RenderWindow& window)
     }
 }
 
-void GUI::Button::draw(sf::RenderTarget& target,sf::RenderStates states) const
+void GUI::Button::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
-
     target.draw(m_button, states);
     target.draw(m_text, states);
     bool check = bIsClicked && m_OnClickListener != nullptr;
@@ -353,40 +260,5 @@ void GUI::Button::draw(sf::RenderTarget& target,sf::RenderStates states) const
         m_OnClickListener(); 
         bIsClicked = false;
     }
-
-    /*
-    switch(m_style)
-    {
-        case GUI::style::none:
-        {
-            target.draw(m_button, states);
-            target.draw(m_text, states);
-        }
-        break;
-
-        case GUI::style::save:
-        {
-            target.draw(m_button, states);
-            target.draw(m_text, states);
-        }
-        break;
-
-        case GUI::style::cancel:
-        {
-            target.draw(m_button, states);
-            target.draw(m_text, states);
-        }
-        break;
-
-        case GUI::style::clean:
-        {
-            target.draw(m_button, states);
-            target.draw(m_text, states);
-        }
-        break;
-
-        default:
-            break;
-    }
-    */
+    target.draw(&point, 1, sf::Points);
 }

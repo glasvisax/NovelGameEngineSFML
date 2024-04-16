@@ -35,10 +35,8 @@ namespace GUI
     class Button : public sf::Drawable
     {
         public:
-            Button();
-            Button(std::string s, sf::Font& font, sf::Vector2f position, sf::Uint32 style, sf::Vector2f size, unsigned int font_size);
-
-            ~Button();
+            Button() {};
+            Button(std::wstring s, sf::Font& font, sf::Vector2f position, sf::Uint32 style, sf::Vector2f size, unsigned int font_size);
 
             void setColorTextNormal(sf::Color text){m_textNormal = text;};
             void setColorTextHover(sf::Color text){m_textHover = text;};
@@ -49,16 +47,21 @@ namespace GUI
             void setBorderColor(sf::Color border){m_border = border;};
             void setBorderThickness(float t){m_borderThickness = t;};
             void setBorderRadius(float r){m_borderRadius = r;};
-            void setPosition(sf::Vector2f position);
+            void setPosition(const sf::Vector2f& position);
             void setSize(unsigned int size);
-            void setText(std::string s) { m_text.setString(s); };
             void setStyle(sf::Uint32 style);
-            void setFont(sf::Font& font);
+            void GUI::Button::setText(const std::wstring& text) { m_text.setString(text); }
+
+            void GUI::Button::setFont(const sf::Font& font) { m_text.setFont(font); }
+
+            void setOrigin(const sf::Vector2f& origin) { m_button.setOrigin(origin); }
 
             sf::Vector2f getPosition() { return m_position; };
-            sf::Vector2f getDimensions() { return sf::Vector2f(m_button.getGlobalBounds().width, m_button.getGlobalBounds().height); };
+            sf::Vector2f getDimensions() const { return sf::Vector2f(m_button.getGlobalBounds().width, m_button.getGlobalBounds().height); };
+
+
             sf::Uint32 getState() { return m_btnstate; };
-            sf::Text GetText() { return m_text; }
+            sf::Text GetText() const { return m_text; }
 
             void update(sf::Event& e, sf::RenderWindow& window);
 
@@ -96,6 +99,7 @@ namespace GUI
 
             std::function<void()> m_OnClickListener;
             mutable bool bIsClicked = false;
+            sf::Vertex point;
 
     };
 };

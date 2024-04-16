@@ -19,10 +19,10 @@ int Engine::Start()
 	assert(script.open(Root + options.code_file) && "couldn't open script");
 
 	std::vector<Statement> statements = std::vector<Statement>(); //script.parse();
-	
+
 	sf::RenderWindow window;
 	window.create(sf::VideoMode(options.width, options.height), options.title, sf::Style::Titlebar | sf::Style::Close);
-
+	
 	GameController game(Root, options, statements, window);
 	SceneController scene(Root, options, window);
 
@@ -33,6 +33,13 @@ int Engine::Start()
 	sf::Clock timer;
 
 	while (window.isOpen()) {
+
+		if (first_iter) {
+			game.BeginPlay();
+			scene.BeginPlay();
+			first_iter = false;
+		}
+
 		sf::Event event;
 		while(window.pollEvent(event)) {
 
@@ -41,25 +48,24 @@ int Engine::Start()
 				window.close();
 			}
 
-			if(!first_iter) game.HandleInput(event);
+			game.HandleInput(event);
+			scene.HandleInput(event);
 		}
 		window.clear();
 
-		if (first_iter) {
-			game.BeginPlay();
-			scene.BeginPlay();
-			first_iter = false;
-		} else {
-			float time = timer.getElapsedTime().asMicroseconds();
-			game.Tick(time);
-			scene.Tick(time);
-		}
+
+
+		float time = timer.getElapsedTime().asMicroseconds();
+		game.Tick(time);
+		scene.Tick(time);
+
 
 		window.display();
 
 		timer.restart();
 
 	}
-	
+
 	return 0;
+
 }

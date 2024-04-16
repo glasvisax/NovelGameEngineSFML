@@ -5,8 +5,8 @@
 
 struct ConfigOptions 
 {
-	int width;
-	int height;
+	unsigned int width;
+	unsigned int height;
 	std::string title;
 	std::string code_file;
 	std::vector<std::string> content_folders;
