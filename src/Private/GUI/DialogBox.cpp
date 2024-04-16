@@ -18,6 +18,7 @@ namespace GUI
         size = size > 0 ? size : 1;
         Text.setCharacterSize(size);
         CharacterName.setCharacterSize(size + 3);
+
         if ((!Text.getString().toWideString().empty() || !Text.getString().toWideString().empty()) && !bChoise) {
             SetText(Text.getString().toWideString(), CharacterName.getString().toWideString());
         }
@@ -29,7 +30,7 @@ namespace GUI
     void DialogBox::SetText(const std::wstring& text, const std::wstring& name)
     {
         bChoise = false;
-        if (name == L"__NOT__EXIST__") {
+        if (name.empty()) {
             bHaveName = false;
             CharacterName.setString(name);
             Text.setPosition(Background.getPosition().x + Offset, Background.getPosition().y + Offset);
@@ -39,6 +40,8 @@ namespace GUI
             CharacterName.setPosition(Background.getPosition().x + Offset, Background.getPosition().y + Offset);
             Text.setPosition(CharacterName.getPosition().x, CharacterName.getPosition().y + CharacterName.getCharacterSize() + CharacterOffset);
         }
+        TextPos = 0;
+        Text.setString(L"");
         WideText = text;
         TextClock.restart();
     }
@@ -77,6 +80,7 @@ namespace GUI
             if (bHaveName) window.draw(CharacterName, states);
             
             if (TextPos < WideText.size() && TextClock.getElapsedTime().asMilliseconds() > TimeToAddChar) {
+                bPrinting = true;
                 std::wstring new_str = Text.getString().toWideString();
                 new_str += WideText[TextPos];
                 sf::String wrapped_str(new_str);
@@ -84,7 +88,12 @@ namespace GUI
                 Text.setString(wrapped_str);
                 TextPos++;
                 TextClock.restart();
+                if (TextPos >= WideText.size()) {
+                    OnTextRenderEnd();
+                    bPrinting = false;
+                }
             }
+            
             window.draw(Text, states);
 
         } else {
@@ -118,11 +127,13 @@ namespace GUI
                     }
                 }
 
-            } else if(TextPos < WideText.size()) { 
+            } else if(TextPos < WideText.size() && bPrinting) {
                 TextPos = WideText.size();
                 sf::String wrapped(WideText);
                 WrapText(wrapped, BackgroundSize.x - (Offset * 2.0f), *Text.getFont(), Text.getCharacterSize(), false);
                 Text.setString(wrapped);
+                bPrinting = false;
+                OnTextRenderEnd();
             }
         }
     }

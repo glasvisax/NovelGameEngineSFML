@@ -26,7 +26,7 @@ namespace GUI
 
         void SetCharacterSize(float size);
 
-        void SetText(const std::wstring& text, const std::wstring& name = L"__NOT__EXIST__");
+        void SetText(const std::wstring& text, const std::wstring& name = L"");
 
         void SetFont(const sf::Font& font);
 
@@ -35,7 +35,6 @@ namespace GUI
         void SetTimeToAddChar(float time) { TimeToAddChar = time; }
 
     public:
-
 
         void SetChoices(const std::vector<std::wstring>& responses);
 
@@ -68,9 +67,17 @@ namespace GUI
         {
             OnChooseListener = [object, method](unsigned int value) { (object->*method)(value); };
         }
+
+        template <typename T>
+        void BindOnRenderEnd(T* object, void (T::* method)())
+        {
+            OnTextRenderEnd = [object, method]() { (object->*method)(); };
+        }
     private:
 
         std::function<void(unsigned int)> OnChooseListener;
+        std::function<void()> OnTextRenderEnd;
         int WrapText(sf::String& string, unsigned width, const sf::Font& font, unsigned charicter_size, bool bold) const;
+        mutable bool bPrinting = false;
     };
 }

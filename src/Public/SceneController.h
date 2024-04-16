@@ -59,6 +59,12 @@ public:
 
 	void SetBackgroundColor(const sf::Color& color);
 
+	void SetText(const std::wstring& text, const std::wstring& name = L"");
+	
+	void SetChoices(const std::vector<std::wstring>& options);
+
+	void SetBackgroundSprite(const std::string& file_name);
+
 private:
 	const ConfigOptions& Options;
 	const std::string& Root;

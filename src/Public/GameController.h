@@ -34,10 +34,11 @@ public:
 
 	void OnGameStart();
 	void OnGameExit();
-	void OnNextFrame();
+	void OnWaitingClick();
 	void OnChoose(unsigned int choise);
 
 private:
+
 	void NextStatement();
 	const ConfigOptions& Options;
 	const std::string& Root;
@@ -46,7 +47,10 @@ private:
 
 	SceneController* Scene = nullptr;
 	
-	size_t frame = 0; // Like instruction pointer
+	unsigned int frame = 0; // Like instruction pointer
 
+	bool bGameStarted = false;
+	bool bWaitClick = false;
+	unsigned int ChosenResponse = 0;
 };
 

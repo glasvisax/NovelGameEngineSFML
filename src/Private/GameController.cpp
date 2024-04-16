@@ -20,124 +20,93 @@ void GameController::SetSceneController(SceneController* scene)
 
 void GameController::HandleInput(sf::Event e)
 {
-
+	if (bGameStarted 
+		&& bWaitClick 
+		&& e.mouseButton.button == sf::Mouse::Left 
+		&& e.type == sf::Event::MouseButtonReleased) {
+		NextStatement();
+		bWaitClick = false;
+	}
 }
 
 void GameController::NextStatement() 
 {
 
+	switch (frame) 
+	{
+		case 0: 
+		{
+			Scene->SetText(L"zov сво ликвидирован", L"власов");
+			Scene->ShowSprite("milk_chan");
+			Scene->ShowGame();
 
-
-	/*
-	//Stop if EOV (end-of-vector)
-	if (ip + 1 == statements.size()) return;
-
-	//Increment instruction pointer
-	ip++;
-
-	//Execute current statement
-	Statement s = statements.at(ip);
-	if (s.type == StatementType::BACKGROUND) {
-		std::string path = root + "/img/" + s.content;
-		if (!BackgroundTexture.loadFromFile(path)) {
-			LOGGER->Log("GameController","ERROR: Failed to load Background %s at statement %d", s.content.c_str(), ip);
-		} else {
-			LOGGER->Log("GameController","Changed Background to %s", s.content.c_str());
+			break;
 		}
-		Background.setTexture(BackgroundTexture);
-		Background.setPosition(sf::Vector2f(0,0));
+		case 1:
+		{
+			Scene->HideSprite("milk_chan");
+			Scene->SetText(L"машала брат", L"дорнан");
+			Scene->SetBackgroundSprite("2.png");
+			Scene->ShowSprite("dornan");
 
-		nextStatement();
-		return;
-	}
-
-	if (s.type == StatementType::TEXT) {
-		DialogBox.SetText(s.wtext);
-	}
-
-	if (s.type == StatementType::DELAY) {
-		delay = atoi(s.content.c_str());
-		bHideText = true;
-		delayClock.restart();
-	}
-
-	if (s.type == StatementType::FONT) {
-		if (!TextFont.loadFromFile(root + "/fonts/"+s.content)) {
-			LOGGER->Log("GameController","ERROR: Failed to load font %s at statement %d", s.content.c_str(), ip);
-		} else {
-			LOGGER->Log("GameController","Changed font to %s", s.content.c_str());
+			break;
 		}
-		nextStatement();
-	}
+		case 2:
+		{
+			Scene->HideSprite("dornan");
+			Scene->SetText(L"как сам чувак", L"власов");
+			Scene->SetBackgroundColor(sf::Color::White);
+			Scene->ShowSprite("milk_chan");
 
-	if (s.type == StatementType::TEXT_COLOR) {
-		sf::Color c = Utils::parseColor(s.content);
-		text.setFillColor(c);
-		//debugText.setFillColor(c);
-		LOGGER->Log("GameController","Changed text color to RGBA(%d,%d,%d,%d)", c.r, c.g, c.b, c.a);
-		nextStatement();
-	}
-
-	if (s.type == StatementType::MUSIC) {
-		std::string path = root + "/music/" + s.content;
-		if (!music.openFromFile(path)) {
-			LOGGER->Log("GameController","ERROR: Failed to load music %s at statement %d", s.content.c_str(), ip);
-		} else {
-			LOGGER->Log("GameController","Changed music to %s", s.content.c_str());
+			break;
 		}
-		music.setLoop(true);
-		music.play();
+		case 3:
+		{
+			Scene->HideSprite("milk_chan");
+			Scene->SetText(L"потихоньку братиш", L"дорнан");
+			Scene->SetBackgroundSprite("2.png");
+			Scene->ShowSprite("dornan");
 
-		nextStatement();
-		return;
-	}
-
-	if (s.type == StatementType::FADE) {
-		std::stringstream ss(s.content);
-		int n = 0;
-		std::string way;
-
-		ss >> way; //in or out
-		ss >> n; //fade speed
-
-		if (way == "in") {
-			fade = n;
-			bFadeOn = true;
-			fadeRect.setFillColor(sf::Color(0,0,0,0));
-			bHideText = true;
-		} else if (way == "out"){
-			fade = -n;
-			bFadeOn = true;
-			fadeRect.setFillColor(sf::Color(0,0,0,255));
-			bHideText = true;
-		} else {
-			LOGGER->Log("GameController", "Unknown fade value at statements %d. Only 'in' and 'out' values are supported.", ip);
+			break;
+		}
+		case 4:
+		{
+			Scene->HideSprite("dornan");
+			Scene->SetChoices({ L"роа", L"упа" });
+			Scene->SetBackgroundSprite("2.png");
+			Scene->SetBackgroundColor(sf::Color::White);
+			Scene->ShowSprite("milk_chan");
+			
+			break;
+		}
+		case 5:
+		{
+			if (ChosenResponse == 0) {
+				Scene->SetText(L"базовичок ты наш", L"milk_chan");
+			}
+			else if(ChosenResponse == 1) {
+				Scene->SetText(L"хохол попался", L"milk_chan");
+			}
+			return;
 		}
 	}
-	*/
+	frame++;
+	
 }
 
 void GameController::BeginPlay()
 {
 	assert(Scene && "SceneController is nullptr");
-
-	auto play_btn = Scene->GetMainMenu().GetButtonByText("Play");
-	if(play_btn) { play_btn->BindOnClick(this, &GameController::OnGameStart); }
-
-	//Scene->GetMainMenu().GetButtonByText("Options").BindOnClick(this, ...);
-
-	auto exit_btn = Scene->GetMainMenu().GetButtonByText("Exit");
-	if(exit_btn) { exit_btn->BindOnClick(this, &GameController::OnGameExit); }
 }
 
 void GameController::Tick(float DeltaTime)
 {
-
 }
 
 void GameController::OnGameStart()
 {
-	Scene->ShowGame();
+	bGameStarted = true;
+	NextStatement();
 }
 
 void GameController::OnGameExit()
@@ -145,14 +114,17 @@ void GameController::OnGameExit()
 	Window.close();
 }
 
-void GameController::OnNextFrame()
+void GameController::OnWaitingClick()
 {
-
+	bWaitClick = true;
 }
 
 void GameController::OnChoose(unsigned int choise)
 {
 
+	ChosenResponse = choise;
+	NextStatement();
+	bWaitClick = true;
 }
 
 void GameController::Update() 

@@ -22,13 +22,13 @@ SceneController::SceneController(const std::string& root, const ConfigOptions& o
 	DialogBox.SetFont(TextFont); 
 	DialogBox.SetCharacterSize(24.0f);
 
-	AddSprite("milk_chan", "milk_chan.png", {120, 45});
-	AddSprite("dornan", "dornan.png", { 70, 45 });
+	AddSprite("milk_chan", "milk_chan.png", {50, 45});
+	AddSprite("dornan", "dornan.png", { 50, 45 });
 
 	// сначала добавл€ем спрайты потом показываем / пр€чем
-	ShowSprite("dornan");
-	ShowSprite("milk_chan");
-	HideSprite("milk_chan");
+	// ShowSprite("dornan");
+	// ShowSprite("milk_chan");
+	// HideSprite("milk_chan");
 }
 
 void SceneController::BeginPlay()
@@ -42,14 +42,10 @@ void SceneController::BeginPlay()
 	if (exit_btn) { exit_btn->BindOnClick(Game, &GameController::OnGameExit); }
 
 	DialogBox.BindOnChoose(Game, &GameController::OnChoose);
+	DialogBox.BindOnRenderEnd(Game, &GameController::OnWaitingClick);
 	
 }
 
-void OnChosen(unsigned int choice) 
-{
-
-
-}
 void SceneController::Tick(float DeltaTime)
 {
 	Render();
@@ -81,8 +77,8 @@ void SceneController::HandleInput(sf::Event e)
 
 void SceneController::ShowGame()
 {
-	DialogBox.SetText(L"—ъешь ещЄ этих м€гких французских булок, да выпей же чаю —ъешь ещЄ этих м€гких французских булок, да выпей же чаю —ъешь ещЄ этих м€гких французских булок, да выпей же чаю");
-	DialogBox.SetChoices({ L"–оа", L"m8l", L"8th - ћоим богам, подобен ветер, что наполн€ет паруса завоеваний, и не дает поко€ жаждущим исканий, коварных норн расставленные сети",  L"сво", });
+	//DialogBox.SetText(L"—ъешь ещЄ этих м€гких французских булок, да выпей же чаю —ъешь ещЄ этих м€гких французских булок, да выпей же чаю —ъешь ещЄ этих м€гких французских булок, да выпей же чаю");
+	//DialogBox.SetChoices({ L"–оа", L"m8l", L"8th - ћоим богам, подобен ветер, что наполн€ет паруса завоеваний, и не дает поко€ жаждущим исканий, коварных норн расставленные сети",  L"сво", });
 	bPlay = true;
 }
 
@@ -182,5 +178,22 @@ void SceneController::SetBackgroundColor(const sf::Color& color)
 	Background.setTexture(BackgroundTexture);
 
 	delete[] pixels;
+}
+
+void SceneController::SetText(const std::wstring& text, const std::wstring& name )
+{
+	DialogBox.SetText(text, name);
+}
+
+void SceneController::SetChoices(const std::vector<std::wstring>& options)
+{
+	DialogBox.SetChoices(options);
+}
+
+void SceneController::SetBackgroundSprite(const std::string& file_name)
+{
+	BackgroundTexture = GetImageTexture(file_name);
+	Background.setTexture(BackgroundTexture);
+
 }
 
