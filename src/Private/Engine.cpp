@@ -43,17 +43,16 @@ int Engine::Start()
 		sf::Event event;
 		while(window.pollEvent(event)) {
 
-			// if Close Button is clicked, exit
+
 			if (event.type == sf::Event::Closed) {
 				window.close();
 			}
 
 			game.HandleInput(event);
 			scene.HandleInput(event);
+			
 		}
 		window.clear();
-
-
 
 		float time = timer.getElapsedTime().asMicroseconds();
 		game.Tick(time);

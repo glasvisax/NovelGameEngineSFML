@@ -20,10 +20,7 @@ void GameController::SetSceneController(SceneController* scene)
 
 void GameController::HandleInput(sf::Event e)
 {
-	if (bGameStarted 
-		&& bWaitClick 
-		&& e.mouseButton.button == sf::Mouse::Left 
-		&& e.type == sf::Event::MouseButtonReleased) {
+	if (bGameStarted && bWaitClick && e.mouseButton.button == sf::Mouse::Left && e.type == sf::Event::MouseButtonReleased) {
 		NextStatement();
 		bWaitClick = false;
 	}
@@ -31,7 +28,9 @@ void GameController::HandleInput(sf::Event e)
 
 void GameController::NextStatement() 
 {
-
+	//TODO анимации дл€ спрайтов/ фонов. јудио
+	Scene->SetTextCharacterSize(25.0f, 30.0f);
+	
 	switch (frame) 
 	{
 		case 0: 
@@ -40,58 +39,81 @@ void GameController::NextStatement()
 			Scene->ShowSprite("milk_chan");
 			Scene->ShowGame();
 
+			frame++;
+
+
+
 			break;
 		}
 		case 1:
 		{
-			Scene->HideSprite("milk_chan");
 			Scene->SetText(L"машала брат", L"дорнан");
+			Scene->HideSprite("milk_chan");
+			
 			Scene->SetBackgroundSprite("2.png");
 			Scene->ShowSprite("dornan");
+
+			frame++;
+
+
 
 			break;
 		}
 		case 2:
 		{
-			Scene->HideSprite("dornan");
 			Scene->SetText(L"как сам чувак", L"власов");
+			Scene->HideSprite("dornan");	
 			Scene->SetBackgroundColor(sf::Color::White);
 			Scene->ShowSprite("milk_chan");
+
+			frame++;
+
 
 			break;
 		}
 		case 3:
 		{
 			Scene->HideSprite("milk_chan");
-			Scene->SetText(L"потихоньку братиш", L"дорнан");
+			Scene->SetText(L"потихоньку братиш выбери плиз за кого ты", L"дорнан");
 			Scene->SetBackgroundSprite("2.png");
 			Scene->ShowSprite("dornan");
+
+			frame++;
+
 
 			break;
 		}
 		case 4:
 		{
+			Scene->SetTextCharacterSize(25.0f, 30.0f);
 			Scene->HideSprite("dornan");
 			Scene->SetChoices({ L"роа", L"упа" });
 			Scene->SetBackgroundSprite("2.png");
 			Scene->SetBackgroundColor(sf::Color::White);
 			Scene->ShowSprite("milk_chan");
 			
+			frame++;
+
+
 			break;
 		}
 		case 5:
 		{
 			if (ChosenResponse == 0) {
-				Scene->SetText(L"базовичок ты наш", L"milk_chan");
+				
+				Scene->SetTextCharacterSize(40.0f, 20.0f);
+				Scene->SetText(L"базовичок ты наш слон€рский ””’!!!", L"milk_chan");
+
 			}
 			else if(ChosenResponse == 1) {
 				Scene->SetText(L"хохол попалс€", L"milk_chan");
 			}
-			return;
+			frame = 4;
+			
 		}
 	}
-	frame++;
 	
+	return;
 }
 
 void GameController::BeginPlay()

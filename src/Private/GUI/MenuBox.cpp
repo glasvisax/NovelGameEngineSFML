@@ -7,8 +7,8 @@ namespace GUI
     {
         BoxSize = sf::Vector2f(ButtonSize.x, BoxSize.y + ButtonSize.y + Space);
 
-        Buttons.emplace_back(text, Font, sf::Vector2f(), style::save, ButtonSize, FontSize);
-        Buttons.back().setOrigin(sf::Vector2f(ButtonSize.x / 2, ButtonSize.y / 2));
+        Buttons.emplace_back(text, Font, sf::Vector2f(), ButtonStyle::Save, ButtonSize, FontSize);
+        Buttons.back().SetOrigin(sf::Vector2f(ButtonSize.x / 2, ButtonSize.y / 2));
         LocateButtons();
         return Buttons.back();
     }
@@ -18,7 +18,7 @@ namespace GUI
     {
         for (auto& Button : Buttons)
         {
-            Button.update(event, window);
+            Button.HandleInput(event, window);
         }
     }
 
@@ -48,7 +48,7 @@ namespace GUI
         float startY = Position.y - totalHeight / 2.0f;
 
         for (size_t i = 0; i < Buttons.size(); ++i) {
-            Buttons[i].setPosition(sf::Vector2f(Position.x, startY + i * (ButtonSize.y + Space)));
+            Buttons[i].SetPosition(sf::Vector2f(Position.x, startY + i * (ButtonSize.y + Space)));
         }
     }
 

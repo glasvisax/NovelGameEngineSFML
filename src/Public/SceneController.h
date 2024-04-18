@@ -60,10 +60,15 @@ public:
 	void SetBackgroundColor(const sf::Color& color);
 
 	void SetText(const std::wstring& text, const std::wstring& name = L"");
+	void SetTextFont(const std::string& file_name);
+	void SetTextCharacterSize(float text_size, float name_size = -1);
+	void SetTextColor(const sf::Color& color);
+	void SetTextHoverColor(const sf::Color& color);
 	
 	void SetChoices(const std::vector<std::wstring>& options);
 
 	void SetBackgroundSprite(const std::string& file_name);
+
 
 private:
 	const ConfigOptions& Options;
@@ -73,6 +78,7 @@ private:
 
 private:
 	bool bPlay = false;
+	bool bPlayBackgAnim = false;
 	GUI::MenuBox MainMenu;
 	GUI::DialogBox DialogBox;
 	sf::Font TextFont;
@@ -88,3 +94,81 @@ private:
 
 	sf::Texture GetImageTexture(const std::string& file_name);
 };
+
+/*
+Использование FadeAnimation из Thor для перехода между текстурами
+Библиотека Thor предоставляет удобный класс FadeAnimation, который идеально подходит для создания плавного перехода между текстурами фона.
+Вот как использовать FadeAnimation для вашей задачи:
+Включите заголовочный файл:
+#include <Thor/Animations.hpp>
+Use code with caution.
+C++
+Создайте объекты sf::Sprite для каждой текстуры фона.
+Создайте объект FadeAnimation:
+// Полное время анимации - 1 секунда
+sf::Time fadeTime = sf::seconds(1.f);
+
+// FadeAnimation с плавным появлением (0.25 секунды) и исчезновением (0.5 секунды)
+thor::FadeAnimation fadeAnimation(0.25f, 0.5f);
+Use code with caution.
+C++
+Создайте объект sf::Clock для отслеживания времени.
+В цикле отрисовки:
+Обновите время анимации:
+sf::Time elapsedTime = clock.restart();
+float progress = elapsedTime / fadeTime;
+Use code with caution.
+C++
+Примените FadeAnimation к текущей текстуре фона:
+fadeAnimation(currentBackgroundSprite, progress);
+Use code with caution.
+C++
+Примените FadeAnimation к новой текстуре фона (с инвертированным прогрессом):
+fadeAnimation(newBackgroundSprite, 1.f - progress);
+Use code with caution.
+C++
+Отрисуйте обе текстуры фона.
+После завершения анимации (progress >= 1.f):
+Установите новую текстуру как текущую.
+Преимущества использования FadeAnimation:
+Простота: Не требует написания собственных шейдеров или сложной логики альфа-смешивания.
+Гибкость: Позволяет настроить время появления и исчезновения текстур.
+Интеграция с SFML: FadeAnimation работает напрямую с объектами sf::Sprite.
+Пример кода:
+#include
+#include
+
+int main()
+{
+	// ... (Создание окна, текстур и спрайтов) ...
+
+	sf::Clock clock;
+	sf::Time fadeTime = sf::seconds(1.f);
+	thor::FadeAnimation fadeAnimation(0.25f, 0.5f);
+
+	while (window.isOpen())
+	{
+		// ... (Обработка событий) ...
+
+		sf::Time elapsedTime = clock.restart();
+		float progress = elapsedTime / fadeTime;
+
+		fadeAnimation(currentBackgroundSprite, progress);
+		fadeAnimation(newBackgroundSprite, 1.f - progress);
+
+		window.clear();
+		window.draw(currentBackgroundSprite);
+		window.draw(newBackgroundSprite);
+		window.display();
+
+		if (progress >= 1.f)
+		{
+			currentBackgroundSprite = newBackgroundSprite;
+			// ... (Загрузить новую текстуру для newBackgroundSprite) ...
+			clock.restart();
+		}
+	}
+
+	return 0;
+}
+*/

@@ -1,7 +1,9 @@
 #include "SceneController.h"
-#include <cassert>
 #include "GameController.h"
+#include <Thor/Animations.hpp>
 
+#include <cassert>
+#include <string>
 SceneController::SceneController(const std::string& root, const ConfigOptions& opts, sf::RenderWindow& window)
 	: Root(root)
 	, Options(opts)
@@ -11,6 +13,7 @@ SceneController::SceneController(const std::string& root, const ConfigOptions& o
 
 	BackgroundTexture.create(Options.width, Options.height);
 	SetBackgroundColor(sf::Color::White);
+	bPlayBackgAnim = true;
 
 	MainMenu.SetBoxPosition(sf::Vector2f(Options.width / 2, Options.height / 2));
 	MainMenu.SetFont(TextFont); // Ў–»‘“ ” ј«џ¬ј“№ ќЅя«ј“≈Ћ№Ќќ!!!!!!!!!!!!!
@@ -25,10 +28,6 @@ SceneController::SceneController(const std::string& root, const ConfigOptions& o
 	AddSprite("milk_chan", "milk_chan.png", {50, 45});
 	AddSprite("dornan", "dornan.png", { 50, 45 });
 
-	// сначала добавл€ем спрайты потом показываем / пр€чем
-	// ShowSprite("dornan");
-	// ShowSprite("milk_chan");
-	// HideSprite("milk_chan");
 }
 
 void SceneController::BeginPlay()
@@ -43,7 +42,6 @@ void SceneController::BeginPlay()
 
 	DialogBox.BindOnChoose(Game, &GameController::OnChoose);
 	DialogBox.BindOnRenderEnd(Game, &GameController::OnWaitingClick);
-	
 }
 
 void SceneController::Tick(float DeltaTime)
@@ -77,8 +75,6 @@ void SceneController::HandleInput(sf::Event e)
 
 void SceneController::ShowGame()
 {
-	//DialogBox.SetText(L"—ъешь ещЄ этих м€гких французских булок, да выпей же чаю —ъешь ещЄ этих м€гких французских булок, да выпей же чаю —ъешь ещЄ этих м€гких французских булок, да выпей же чаю");
-	//DialogBox.SetChoices({ L"–оа", L"m8l", L"8th - ћоим богам, подобен ветер, что наполн€ет паруса завоеваний, и не дает поко€ жаждущим исканий, коварных норн расставленные сети",  L"сво", });
 	bPlay = true;
 }
 
@@ -88,7 +84,6 @@ sf::Texture SceneController::GetImageTexture(const std::string& file_name)
 	bool load = false;
 	for (auto& texturePath : Options.content_folders)
 	{
-
 		std::string path = Root + texturePath + '/' + file_name;
 
 		if (texture.loadFromFile(path))
@@ -99,7 +94,6 @@ sf::Texture SceneController::GetImageTexture(const std::string& file_name)
 	}
 
 	assert(load && "Not Found Image");
-
 	return texture;
 }
 
@@ -180,7 +174,7 @@ void SceneController::SetBackgroundColor(const sf::Color& color)
 	delete[] pixels;
 }
 
-void SceneController::SetText(const std::wstring& text, const std::wstring& name )
+void SceneController::SetText(const std::wstring& text, const std::wstring& name)
 {
 	DialogBox.SetText(text, name);
 }
@@ -194,6 +188,28 @@ void SceneController::SetBackgroundSprite(const std::string& file_name)
 {
 	BackgroundTexture = GetImageTexture(file_name);
 	Background.setTexture(BackgroundTexture);
+}
 
+void SceneController::SetTextFont(const std::string& file_name)
+{
+	sf::Font font;
+	if (!font.loadFromFile(file_name)) return;
+
+	DialogBox.SetFont(font);
+}
+
+void SceneController::SetTextCharacterSize(float text_size, float name_size)
+{
+	DialogBox.SetCharacterSize(text_size, name_size);
+}
+
+void SceneController::SetTextColor(const sf::Color& color)
+{
+	DialogBox.SetTextColor(color);
+}
+
+void SceneController::SetTextHoverColor(const sf::Color& color)
+{
+	DialogBox.SetTextHoverColor(color);
 }
 

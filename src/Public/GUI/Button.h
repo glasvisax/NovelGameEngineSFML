@@ -9,61 +9,52 @@
 
 namespace GUI
 {
-    
-    namespace style
+    enum class ButtonStyle
     {
-        enum 
-        {
-            none = 0,
-            save = 1,
-            cancel = 2,
-            clean = 3,
-        };
+        None,
+        Save,
+        Cancel,
+        Clean
+    };
+   
+
+    enum class ButtonState 
+    {
+        Normal,
+        Hovered,
+        Clicked,
+        Released
     };
 
-    namespace state
-    {
-        enum
-        {
-            normal = 0,
-            hovered = 1,
-            clicked = 2,
-            released = 3
-        };
-    };
 
     class Button : public sf::Drawable
     {
         public:
             Button() {};
-            Button(std::wstring s, sf::Font& font, sf::Vector2f position, sf::Uint32 style, sf::Vector2f size, unsigned int font_size);
+            Button(const std::wstring& s, sf::Font& font, const sf::Vector2f& position, ButtonStyle style, const sf::Vector2f& size, unsigned int font_size);
 
-            void setColorTextNormal(sf::Color text){m_textNormal = text;};
-            void setColorTextHover(sf::Color text){m_textHover = text;};
-            void setColorTextClicked(sf::Color text){m_textClicked = text;};
-            void setColorNormal(sf::Color bgNormal){m_bgNormal = bgNormal;};
-            void setColorHover(sf::Color bgHover){m_bgHover = bgHover;};
-            void setColorClicked(sf::Color bgClicked){m_bgClicked = bgClicked;};
-            void setBorderColor(sf::Color border){m_border = border;};
-            void setBorderThickness(float t){m_borderThickness = t;};
-            void setBorderRadius(float r){m_borderRadius = r;};
-            void setPosition(const sf::Vector2f& position);
-            void setSize(unsigned int size);
-            void setStyle(sf::Uint32 style);
-            void GUI::Button::setText(const std::wstring& text) { m_text.setString(text); }
-
-            void GUI::Button::setFont(const sf::Font& font) { m_text.setFont(font); }
-
-            void setOrigin(const sf::Vector2f& origin) { m_button.setOrigin(origin); }
+            void SetColorTextNormal(sf::Color text) { m_textNormal = text; };
+            void SetColorTextHover(sf::Color text) { m_textHover = text; };
+            void SetColorTextClicked(sf::Color text) { m_textClicked = text; };
+            void SetColorNormal(sf::Color bgNormal) { m_bgNormal = bgNormal; };
+            void SetColorHover(sf::Color bgHover) { m_bgHover = bgHover; };
+            void SetColorClicked(sf::Color bgClicked) { m_bgClicked = bgClicked; };
+            void SetBorderColor(sf::Color border) { m_border = border; };
+            void SetBorderThickness(float t) { m_borderThickness = t; };
+            void SetBorderRadius(float r) { m_borderRadius = r; };
+            void SetPosition(const sf::Vector2f& position);
+            void SetSize(unsigned int size);
+            void SetText(const std::wstring& text) { m_text.setString(text); }
+            void SetFont(const sf::Font& font) { m_text.setFont(font); }
+            void SetStyle(ButtonStyle style);
+            void SetOrigin(const sf::Vector2f& origin) { m_button.setOrigin(origin); }
 
             sf::Vector2f getPosition() { return m_position; };
-            sf::Vector2f getDimensions() const { return sf::Vector2f(m_button.getGlobalBounds().width, m_button.getGlobalBounds().height); };
 
-
-            sf::Uint32 getState() { return m_btnstate; };
+            ButtonState getState() { return m_btnstate; };
             sf::Text GetText() const { return m_text; }
 
-            void update(sf::Event& e, sf::RenderWindow& window);
+            void HandleInput(sf::Event& e, sf::RenderWindow& window);
 
             template <typename T>
             void BindOnClick(T* object, void (T::* method)()) 
@@ -89,8 +80,8 @@ namespace GUI
             float m_borderRadius;
             sf::Vector2f m_size;
             sf::Vector2f m_position;
-            sf::Uint32 m_style;
-            sf::Uint32 m_btnstate;
+            ButtonStyle m_style;
+            ButtonState m_btnstate;
 
             sf::ConvexShape m_button;
             sf::Font m_font;
@@ -99,7 +90,8 @@ namespace GUI
 
             std::function<void()> m_OnClickListener;
             mutable bool bIsClicked = false;
-            sf::Vertex point;
+
+            
 
     };
 };

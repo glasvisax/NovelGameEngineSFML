@@ -53,7 +53,7 @@ int main()
 
 #include "Engine.h"
 
-int main()
+int WinMain()
 {
 	Engine engine;
 	return engine.Start();

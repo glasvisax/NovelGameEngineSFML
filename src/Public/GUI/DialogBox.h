@@ -24,13 +24,15 @@ namespace GUI
 
     public:
 
-        void SetCharacterSize(float size);
+        void SetCharacterSize(float text_size, float name_size = -1);
 
         void SetText(const std::wstring& text, const std::wstring& name = L"");
 
         void SetFont(const sf::Font& font);
 
-        void SetTextColor(const sf::Color& text_color = sf::Color::Black);
+        void SetTextColor(const sf::Color& text_color);
+
+        void SetTextHoverColor(const sf::Color& color);
         
         void SetTimeToAddChar(float time) { TimeToAddChar = time; }
 
@@ -38,7 +40,7 @@ namespace GUI
 
         void SetChoices(const std::vector<std::wstring>& responses);
 
-        int GetSelectedResponse() const { return CurrentResponse; }
+        int GetSelectedChoice() const { return CurrentResponse; }
 
     private:
 
@@ -55,13 +57,14 @@ namespace GUI
 
         float TimeToAddChar = 30.0f;
         bool bHaveName = false;
-
-    public:
+  
 
         std::vector<std::wstring> Responses;
         mutable std::vector<sf::Text> ResponseTexts;
         int CurrentResponse = -1;
+        sf::Color HoverColor;
 
+  public:
         template <typename T>
         void BindOnChoose(T* object, void (T::* method)(unsigned int))
         {

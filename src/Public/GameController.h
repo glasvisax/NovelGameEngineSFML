@@ -12,12 +12,6 @@ class SceneController;
 class GameController : public BaseController
 {
 public:
-	enum class CharacterPosition
-	{
-		LEFT,
-		CENTER,
-		RIGHT
-	};
 
 	GameController(const std::string& root, const ConfigOptions& opts, const std::vector<Statement>& statements, sf::RenderWindow& window);
 
@@ -32,6 +26,7 @@ public:
 
 	virtual void Tick(float DeltaTime) override;
 
+public:
 	void OnGameStart();
 	void OnGameExit();
 	void OnWaitingClick();
@@ -44,11 +39,10 @@ private:
 	const std::string& Root;
 	const std::vector<Statement>& Statements;
 	sf::RenderWindow& Window;
-
 	SceneController* Scene = nullptr;
-	
-	unsigned int frame = 0; // Like instruction pointer
 
+private:
+	unsigned int frame = 0;
 	bool bGameStarted = false;
 	bool bWaitClick = false;
 	unsigned int ChosenResponse = 0;

@@ -11,13 +11,14 @@ namespace GUI
         Text.setColor(sf::Color::Black);
         CharacterName.setColor(sf::Color::Black);
         Text.setCharacterSize(14.0f);
-        CharacterName.setCharacterSize(14.0f + 3.0f);
+        CharacterName.setCharacterSize(14.0f + 5.0f);
     }
-    void DialogBox::SetCharacterSize(float size)
+    void DialogBox::SetCharacterSize(float text_size, float name_size)
     {
-        size = size > 0 ? size : 1;
-        Text.setCharacterSize(size);
-        CharacterName.setCharacterSize(size + 3);
+        text_size = text_size > 0 ? text_size : 1;
+        Text.setCharacterSize(text_size);
+        if(name_size == -1) CharacterName.setCharacterSize(text_size);
+        else CharacterName.setCharacterSize(name_size);
 
         if ((!Text.getString().toWideString().empty() || !Text.getString().toWideString().empty()) && !bChoise) {
             SetText(Text.getString().toWideString(), CharacterName.getString().toWideString());
@@ -44,6 +45,7 @@ namespace GUI
         Text.setString(L"");
         WideText = text;
         TextClock.restart();
+        bPrinting = false;
     }
 
     void DialogBox::SetFont(const sf::Font& font)
@@ -62,6 +64,16 @@ namespace GUI
     {
         CharacterName.setColor(text_color);
         Text.setColor(text_color);
+        if (!ResponseTexts.empty()) {
+            for (auto& rt : ResponseTexts) {
+                rt.setColor(text_color);
+            }
+        }
+    }
+
+    void DialogBox::SetTextHoverColor(const sf::Color& color)
+    {
+        HoverColor = color;
     }
 
     void DialogBox::SetBackgroundShape(const sf::Vector2f& background_size, const sf::Vector2f& position, float corner_radius,  const sf::Color& background_color, float outline_thickness, const sf::Color& outline_color)
@@ -71,7 +83,6 @@ namespace GUI
         BackgroundSize = background_size;
     }
 
-
     void DialogBox::draw(sf::RenderTarget& window, sf::RenderStates states)  const
     {
         window.draw(Background, states);
@@ -80,7 +91,7 @@ namespace GUI
             if (bHaveName) window.draw(CharacterName, states);
             
             if (TextPos < WideText.size() && TextClock.getElapsedTime().asMilliseconds() > TimeToAddChar) {
-                bPrinting = true;
+
                 std::wstring new_str = Text.getString().toWideString();
                 new_str += WideText[TextPos];
                 sf::String wrapped_str(new_str);
@@ -88,6 +99,7 @@ namespace GUI
                 Text.setString(wrapped_str);
                 TextPos++;
                 TextClock.restart();
+                bPrinting = true;
                 if (TextPos >= WideText.size()) {
                     OnTextRenderEnd();
                     bPrinting = false;
@@ -97,11 +109,11 @@ namespace GUI
             window.draw(Text, states);
 
         } else {
-            sf::Vector2i mousePos = sf::Mouse::getPosition(static_cast<sf::RenderWindow&>(window));
+            sf::Vector2i mouse_pos = sf::Mouse::getPosition(static_cast<sf::RenderWindow&>(window));
             for (auto& s : ResponseTexts) {
                 sf::FloatRect bounds = s.getGlobalBounds();
 
-                if (bounds.contains(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y))) {
+                if (bounds.contains(static_cast<float>(mouse_pos.x), static_cast<float>(mouse_pos.y))) {
                     s.setFillColor(sf::Color::White);
                 }
                 else {
@@ -126,7 +138,6 @@ namespace GUI
                         break;
                     }
                 }
-
             } else if(TextPos < WideText.size() && bPrinting) {
                 TextPos = WideText.size();
                 sf::String wrapped(WideText);
