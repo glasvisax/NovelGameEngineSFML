@@ -20,13 +20,35 @@ void GameController::SetSceneController(SceneController* scene)
 
 void GameController::HandleInput(sf::Event e)
 {
-	if (bGameStarted && bWaitClick && e.mouseButton.button == sf::Mouse::Left && e.type == sf::Event::MouseButtonReleased) {
-		NextStatement();
-		bWaitClick = false;
+	if (bHandleInput && e.mouseButton.button == sf::Mouse::Left && e.type == sf::Event::MouseButtonReleased) 
+	{
+		Next();
 	}
 }
 
-void GameController::NextStatement() 
+void GameController::StopHandlingInput()
+{
+	bHandleInput = false;
+}
+
+void GameController::StartHandlingInput()
+{
+	bHandleInput = true;
+}
+
+void GameController::OnExitGame()
+{
+	Window.close();
+}
+
+void GameController::Next()
+{
+	StopHandlingInput();
+	NextStatement();
+	Scene->StartHandlingInput();
+}
+
+void GameController::NextStatement()
 {
 	//TODO анимации для спрайтов/ фонов. Аудио
 	Scene->SetTextCharacterSize(25.0f, 30.0f);
@@ -41,16 +63,14 @@ void GameController::NextStatement()
 
 			frame++;
 
-
-
 			break;
 		}
 		case 1:
 		{
-			Scene->SetText(L"машала брат", L"дорнан");
 			Scene->HideSprite("milk_chan");
-			
-			Scene->SetBackgroundSprite("2.png");
+
+			Scene->SetText(L"машала брат ээээээээээээээээээээээээээээээээээээ", L"дорнан");
+			Scene->ShowBackground("2");
 			Scene->ShowSprite("dornan");
 
 			frame++;
@@ -61,11 +81,12 @@ void GameController::NextStatement()
 		}
 		case 2:
 		{
-			Scene->SetText(L"как сам чувак", L"власов");
 			Scene->HideSprite("dornan");	
+
+			Scene->SetText(L"как сам чувак эээээээээээээээээээээээ", L"власов");
 			Scene->SetBackgroundColor(sf::Color::White);
 			Scene->ShowSprite("milk_chan");
-
+			Scene->PlayAudioChannel("channel_0", true);
 			frame++;
 
 
@@ -74,8 +95,9 @@ void GameController::NextStatement()
 		case 3:
 		{
 			Scene->HideSprite("milk_chan");
+
 			Scene->SetText(L"потихоньку братиш выбери плиз за кого ты", L"дорнан");
-			Scene->SetBackgroundSprite("2.png");
+			Scene->ShowBackground("2");
 			Scene->ShowSprite("dornan");
 
 			frame++;
@@ -85,10 +107,14 @@ void GameController::NextStatement()
 		}
 		case 4:
 		{
-			Scene->SetTextCharacterSize(25.0f, 30.0f);
+			Scene->StopAudioChannel("channel_0");
+
+			Scene->PlayAudioChannel("channel_1");
+
 			Scene->HideSprite("dornan");
+
+			Scene->SetTextCharacterSize(25.0f, 30.0f);
 			Scene->SetChoices({ L"роа", L"упа" });
-			Scene->SetBackgroundSprite("2.png");
 			Scene->SetBackgroundColor(sf::Color::White);
 			Scene->ShowSprite("milk_chan");
 			
@@ -97,10 +123,12 @@ void GameController::NextStatement()
 
 			break;
 		}
+		
 		case 5:
 		{
+			static int my_counter = 0;
+
 			if (ChosenResponse == 0) {
-				
 				Scene->SetTextCharacterSize(40.0f, 20.0f);
 				Scene->SetText(L"базовичок ты наш слонярский УУХ!!!", L"milk_chan");
 
@@ -111,8 +139,9 @@ void GameController::NextStatement()
 			frame = 4;
 			
 		}
+
 	}
-	
+
 	return;
 }
 
@@ -125,101 +154,12 @@ void GameController::Tick(float DeltaTime)
 {
 }
 
-void GameController::OnGameStart()
+void GameController::SetCurrentChoice(unsigned int choise)
 {
-	bGameStarted = true;
-	NextStatement();
-}
-
-void GameController::OnGameExit()
-{
-	Window.close();
-}
-
-void GameController::OnWaitingClick()
-{
-	bWaitClick = true;
-}
-
-void GameController::OnChoose(unsigned int choise)
-{
-
 	ChosenResponse = choise;
-	NextStatement();
-	bWaitClick = true;
-}
-
-void GameController::Update() 
-{
-	/*
-	DialogBox.update();
-
-	//Delay logic
-	if (delay > 0 && delayClock.getElapsedTime().asMilliseconds() > delay) {
-		bHideText = false;
-		delay = 0;
-		nextStatement();
-	}
-
-	if (bFadeOn) {
-		sf::Color c = fadeRect.getFillColor();
-
-		//If fade animation is finished, continue executing statements
-		if (fade < 0 && fade + c.a < 0) {
-			bFadeOn = false;
-			bHideText = false;
-			nextStatement();
-			return;
-		} else if (fade > 0 && fade + c.a > 255) {
-			fade = 0; // We do not set bFadeOn to false to allow executing next statements without losing fade rect state
-			bHideText = false;
-			nextStatement();
-			return;
-		} else {
-			//If animation is in process, set rect color
-			c.a += fade;
-			fadeRect.setFillColor(c);
-		}
-	}
-	*/
 }
 
 
-/*
-void GameController::Render(sf::RenderWindow& window) 
-{
-	//window.draw(*Scene);
-	//window.draw(Background);
-	//window.draw(DialogBox);
-	//window.draw(MainMenu);
-
-	
-	
-	
-	if (!bPlay) 
-	{
-		MainMenu.render(window);
-	}
-	//MainMenu.draw(window);
-	
-	window.draw(Background);
-	window.draw(MainCharacterSprite);
-
-	if (bFadeOn) window.draw(fadeRect);
-
-	//Draw only if text is not hidden
-	if (!bHideText) {
-		window.draw(TextBoxSprite);
-		window.draw(text);
-	}
-
-
-	//if (debug) window.draw(debugText);
-
-	//fpsCounter.update();
-	
-}
-*/
 /*
 sf::Color parseColor(std::string str) {
 	std::istringstream ss(str);

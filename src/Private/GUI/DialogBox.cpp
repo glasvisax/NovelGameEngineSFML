@@ -3,6 +3,10 @@
 constexpr float Offset = 15.0f;
 constexpr float CharacterOffset = 7.0f;
 
+// костыли костылечки
+// пришлось делать но думаю это ошибка в дизайне (€ не профи в этом всем)
+static bool true_callback = false;
+static bool true_select = false;
 
 namespace GUI 
 {
@@ -46,6 +50,7 @@ namespace GUI
         WideText = text;
         TextClock.restart();
         bPrinting = false;
+        true_select = false;
     }
 
     void DialogBox::SetFont(const sf::Font& font)
@@ -106,6 +111,10 @@ namespace GUI
                 }
             }
             
+            if (true_callback) {
+                OnTextRenderEnd();
+                true_callback = false;
+            }
             window.draw(Text, states);
 
         } else {
@@ -120,6 +129,7 @@ namespace GUI
                     s.setFillColor(sf::Color::Black);
                 }
                 window.draw(s, states);
+                if(!true_select) true_select = true;
             }
         }
     }
@@ -128,13 +138,15 @@ namespace GUI
     {
 
         if (e.mouseButton.button == sf::Mouse::Left && e.type == sf::Event::MouseButtonReleased) {
-            if (bChoise)
+            if (bChoise && true_select)
             {
                 sf::Vector2i mouse_pos = sf::Mouse::getPosition(static_cast<sf::RenderWindow&>(window));
                 for (int i = 0; i < ResponseTexts.size(); ++i) {
                     sf::FloatRect bounds = ResponseTexts[i].getGlobalBounds();
                     if (bounds.contains(static_cast<float>(mouse_pos.x), static_cast<float>(mouse_pos.y))) {
                         OnChooseListener(i);
+                        bChoise = false;
+                        true_select = false;
                         break;
                     }
                 }
@@ -144,7 +156,7 @@ namespace GUI
                 WrapText(wrapped, BackgroundSize.x - (Offset * 2.0f), *Text.getFont(), Text.getCharacterSize(), false);
                 Text.setString(wrapped);
                 bPrinting = false;
-                OnTextRenderEnd();
+                true_callback = true;
             }
         }
     }

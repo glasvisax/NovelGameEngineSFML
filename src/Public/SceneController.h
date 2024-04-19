@@ -46,18 +46,24 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	void HandleInput(sf::Event e);
+	void StopHandlingInput();
+	void StartHandlingInput();
 
 	GUI::MenuBox& GetMainMenu() { return MainMenu; }
 
 	void ShowGame();
 
 	void AddSprite(const std::string& sprite_name, const std::string& file_name, const sf::Vector2u& position = { 50, 40 }, bool user_scale = false, float scale = 1.0f);
+
+	void AddBackground(const std::string& bg_name, const std::string& file_name);
+
+	void ShowBackground(const std::string& bg_name);
+
+	void SetBackgroundColor(const sf::Color& color);
 	
 	void ShowSprite(const std::string& sprite_name);
 
 	void HideSprite(const std::string& sprite_name);
-
-	void SetBackgroundColor(const sf::Color& color);
 
 	void SetText(const std::wstring& text, const std::wstring& name = L"");
 	void SetTextFont(const std::string& file_name);
@@ -67,14 +73,13 @@ public:
 	
 	void SetChoices(const std::vector<std::wstring>& options);
 
-	void SetBackgroundSprite(const std::string& file_name);
-
-
 private:
 	const ConfigOptions& Options;
 	const std::string& Root;
 	sf::RenderWindow& Window;
 	GameController* Game;
+	bool bHandleInput = true;
+
 
 private:
 	bool bPlay = false;
@@ -83,16 +88,33 @@ private:
 	GUI::DialogBox DialogBox;
 	sf::Font TextFont;
 	sf::Music Music;
-	sf::Texture BackgroundTexture;
-	sf::Sprite Background;
+
 	std::vector<UserSprite> Sprites;
 	std::list<UserSprite*> ShownSprites;
 
-private:
+	std::vector<UserSprite> Backgrounds;
+	UserSprite* Background;
 
+private:
+	void ToggleHandlingInput();
+	void ToNextFrame();
+	void OnChoiceSelected(unsigned int choice);
 	void Render();
 
 	sf::Texture GetImageTexture(const std::string& file_name);
+	std::string GetFilePath(const std::string& file_name);
+	void SetTextureColor(const sf::Color& color, sf::Texture& texture);
+
+public:
+
+	void AddAudioChannel(const std::string& name, const std::string& file_name);
+	void PlayAudioChannel(const std::string& name, bool loop = false);
+	void StopAudioChannel(const std::string& name);
+	void SetAudioChannelVolume(const std::string& name, float volume);
+	void ReloadAudioChannel(const std::string& name, const std::string& file_name);
+
+private:
+	std::map<std::string, std::shared_ptr<sf::Music>> AudioChannels;
 };
 
 /*

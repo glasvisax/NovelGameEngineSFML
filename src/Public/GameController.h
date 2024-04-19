@@ -20,20 +20,21 @@ public:
 public:
 
 	void HandleInput(sf::Event e);
-	void Update();
+	void StopHandlingInput();
+	void StartHandlingInput();
+	void OnExitGame();
 
 	virtual void BeginPlay() override;
 
 	virtual void Tick(float DeltaTime) override;
 
 public:
-	void OnGameStart();
-	void OnGameExit();
-	void OnWaitingClick();
-	void OnChoose(unsigned int choise);
+
+	void SetCurrentChoice(unsigned int choise);
+	void Next();
 
 private:
-
+	
 	void NextStatement();
 	const ConfigOptions& Options;
 	const std::string& Root;
@@ -44,7 +45,7 @@ private:
 private:
 	unsigned int frame = 0;
 	bool bGameStarted = false;
-	bool bWaitClick = false;
+	bool bHandleInput = false;
 	unsigned int ChosenResponse = 0;
 };
 
