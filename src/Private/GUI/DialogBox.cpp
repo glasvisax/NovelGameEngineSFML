@@ -123,10 +123,10 @@ namespace GUI
                 sf::FloatRect bounds = s.getGlobalBounds();
 
                 if (bounds.contains(static_cast<float>(mouse_pos.x), static_cast<float>(mouse_pos.y))) {
-                    s.setFillColor(sf::Color::White);
+                    s.setFillColor(HoverColor);
                 }
                 else {
-                    s.setFillColor(sf::Color::Black);
+                    s.setFillColor(Text.getColor());
                 }
                 window.draw(s, states);
                 if(!true_select) true_select = true;

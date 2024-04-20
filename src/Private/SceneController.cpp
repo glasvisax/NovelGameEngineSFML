@@ -6,6 +6,9 @@
 #include <string>
 #include <filesystem>
 
+// êîñòûëü :)
+std::vector<SceneController::UserSprite*> to_unshow;
+
 SceneController::SceneController(const std::string& root, const ConfigOptions& opts, sf::RenderWindow& window)
 	: Root(root)
 	, Options(opts)
@@ -20,8 +23,6 @@ SceneController::SceneController(const std::string& root, const ConfigOptions& o
 
 	AddBackground("2", "2.png");
 
-
-
 	// ÑÍÀ×ÀËÀ ÄÎÁÀÂËßÅÌ ÂÑÅ ÂÎÇÌÎÆÍÛÅ ÔÎÍÛ ÏÎÒÎÌ ÓÆÅ 
 	// ÓÊÀÇÛÂÀÅÌ ÔÎÍÛ ÈÇ ÄÎÁÀÂËÅÍÍÛÕ, ÈÇ ÇÀ ÐÅÀËËÎÊÀÖÈÈ ÓÊÀÇÀÒÅËÜ ÒÅÐßÅÒÑß
 
@@ -34,12 +35,13 @@ SceneController::SceneController(const std::string& root, const ConfigOptions& o
 	MainMenu.AddButton(L"Options");
 	MainMenu.AddButton(L"Exit");
 
-	DialogBox.SetBackgroundShape(sf::Vector2f(Options.width - 100.0f, Options.height / 4), sf::Vector2f(50, Options.height - Options.height / 4));
+	DialogBox.SetBackgroundShape(sf::Vector2f(Options.width - 100.0f, Options.height / 4), sf::Vector2f(50, Options.height - Options.height / 4), 2.0f, sf::Color::Black, 5.f, sf::Color(32.f, 115.f, 49.f));
 	DialogBox.SetFont(TextFont); 
 	DialogBox.SetCharacterSize(24.0f);
+	DialogBox.SetTextColor(sf::Color(32.f, 115.f, 49.f));
 
 	AddSprite("milk_chan", "milk_chan.png", {50, 45});
-	AddSprite("dornan", "dornan.png", { 50, 45 });
+	AddSprite("dornan", "dornan.png", { 50, 49 });
 
 	AddAudioChannel("channel_0", "1.ogg");
 	AddAudioChannel("channel_1", "2.mp3");
@@ -61,6 +63,20 @@ void SceneController::BeginPlay()
 
 void SceneController::Tick(float DeltaTime)
 {
+	if (FormerBackground) FormerBackground->update();
+	Background->update();
+	if (bPlay) {
+		for (auto& s : ShownSprites) {
+			s->update();
+		}
+	}
+
+	if (!to_unshow.empty()) {
+		for (auto& us : to_unshow) {
+			HideSprite(us->Name, false);
+		}
+		to_unshow.clear();
+	}
 	Render();
 }
 
@@ -84,7 +100,9 @@ void SceneController::OnChoiceSelected(unsigned int choice)
 
 void SceneController::Render()
 {
-	Window.draw(Background->Sprite);
+	if(FormerBackground) Window.draw(*FormerBackground);
+	Window.draw(*Background);
+
 	if (!bPlay) {
 		Window.draw(MainMenu);
 	}
@@ -127,11 +145,8 @@ void SceneController::ShowGame()
 sf::Texture SceneController::GetImageTexture(const std::string& file_name)
 {
 	sf::Texture texture;
-
 	std::string path = GetFilePath(file_name);
-
 	assert(texture.loadFromFile(path) && "Not Found Image");
-
 	return texture;
 }
 
@@ -193,18 +208,28 @@ void SceneController::AddBackground(const std::string& bg_name, const std::strin
 	auto& sprite = Backgrounds.back().Sprite;
 	sprite.setPosition(sf::Vector2f(0.0f, 0.0f));
 }
-void SceneController::ShowBackground(const std::string& bg_name)
+
+void SceneController::ShowBackground(const std::string& bg_name, bool fade_anim)
 {
 	if (Backgrounds.empty()) return;
-	for (auto& sp : Backgrounds) {
-		if (sp.Name == bg_name) {
-			Background = &sp;
+	for (auto& bg : Backgrounds) {
+		if (bg.Name == bg_name) {
+			bg.Reset();
+			if (fade_anim) {
+				FormerBackground = Background;
+				Background = &bg;
+				Background->OnFadeInEnd = [this]() mutable -> void { FormerBackground = nullptr; };
+				Background->PlayFadeIn();
+			} else {
+				Background = &bg;
+			}
+			
 			return;
 		}
 	}
 }
 
-void SceneController::SetBackgroundColor(const sf::Color& color)
+void SceneController::SetBackgroundColor(const sf::Color& color, bool fade_anim)
 {
 	static sf::Color prev_color = color;
 	auto& bg = Backgrounds.front();
@@ -212,29 +237,44 @@ void SceneController::SetBackgroundColor(const sf::Color& color)
 		SetTextureColor(color, bg.Texture); 
 		prev_color = color;
 	}
-	Background = &bg;
+	bg.Reset();
+	if (fade_anim) {
+		FormerBackground = Background;
+		Background = &bg;
+		Background->OnFadeInEnd = [this]() mutable -> void { FormerBackground = nullptr; };
+		Background->PlayFadeIn();
+	}
+	else {
+		Background = &bg;
+	}
 }
 
-void SceneController::ShowSprite(const std::string& sprite_name)
+void SceneController::ShowSprite(const std::string& sprite_name, bool fade_anim)
 {
 	if (Sprites.empty()) return;
 	for (auto& sp : Sprites) {
 		if (sp.Name == sprite_name) {
+			sp.Reset();
 			ShownSprites.push_back(&sp);
+			if(fade_anim) sp.PlayFadeIn();
+			//std::cout << sp.Sprite.getColor().g << "    ";
 			break;
 		}
 	}
 }
 
-void SceneController::HideSprite(const std::string& sprite_name)
+void SceneController::HideSprite(const std::string& sprite_name, bool fade_anim)
 {
 	if (ShownSprites.empty()) return;
-	for (auto it = ShownSprites.begin(); it != ShownSprites.end(); ++it) {
-		if ((*it)->Name == sprite_name) { 
-			it = ShownSprites.erase(it);
-			break;
-		}
 
+	auto it = std::find_if(ShownSprites.begin(), ShownSprites.end(), [&](const auto& sprite) { return sprite->Name == sprite_name; });
+	if (it == ShownSprites.end()) return;
+	(*it)->Reset();
+	if (fade_anim) {
+		(*it)->PlayFadeOut();
+		(*it)->OnFadeOutEnd = [this, it]() mutable { to_unshow.push_back(*it); };
+	} else {
+		ShownSprites.erase(it);
 	}
 }
 
@@ -318,12 +358,8 @@ void SceneController::SetAudioChannelVolume(const std::string& name, float volum
 
 void SceneController::ReloadAudioChannel(const std::string& name, const std::string& file_name) {
 	if (AudioChannels.find(name) != AudioChannels.end()) {
-		// Îñòàíàâëèâàåì òåêóùèé êàíàë
 		AudioChannels[name]->stop();
-
-		// Ïåðåçàãðóæàåì ôàéë
 		if (AudioChannels[name]->openFromFile(GetFilePath(file_name))) {
-			// Âîçîáíîâëÿåì âîñïðîèçâåäåíèå
 			AudioChannels[name]->play();
 		}
 	}

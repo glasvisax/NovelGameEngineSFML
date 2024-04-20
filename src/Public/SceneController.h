@@ -9,15 +9,18 @@
 #include "GUI/GUI.h"
 #include "BaseController.h"
 
+#include <Thor/Animations.hpp>
+
 class GameController;
 
 class SceneController : public BaseController
 {
 public:
 
-	struct UserSprite 
+	struct UserSprite : sf::Drawable
 	{
-		UserSprite(const UserSprite& other) {
+		UserSprite(const UserSprite& other)
+		{
 			Name = other.Name;
 			Texture = other.Texture;
 			Sprite.setTexture(Texture);
@@ -26,15 +29,89 @@ public:
 			Sprite.scale(other.Sprite.getScale());
 		}
 
-		UserSprite(const std::string& name, const sf::Texture& texture) : Name(name), Texture(texture)
+		UserSprite(const std::string& name, const sf::Texture& texture)
+			: Name(name)
+			, Texture(texture)
 		{
 			Sprite.setTexture(Texture);
 		}
+
+		void update()
+		{
+			if (bPlayFadeIn)
+			{
+				float elapsedTime = clock.getElapsedTime().asSeconds();
+				float progress = (elapsedTime / FadeTime);
+				progress = progress > 1 ? 1 : progress;
+
+				FadeIn(Sprite, progress);
+
+				if (progress >= 1)
+				{
+					bPlayFadeIn = false;
+					if (OnFadeInEnd) OnFadeInEnd();
+				}
+			}
+			else if (bPlayFadeOut)
+			{
+				float elapsedTime = clock.getElapsedTime().asSeconds();
+				float progress = elapsedTime / FadeTime;
+				progress = progress > 1 ? 1 : progress;
+
+				FadeOut(Sprite, progress);
+
+				if (progress >= 1)
+				{
+					bPlayFadeOut = false;
+					if (OnFadeOutEnd) OnFadeOutEnd();
+					return;
+				}
+			}
+			
+		}
+
+		void Reset() 
+		{
+			auto& color = Sprite.getColor();
+			Sprite.setColor(sf::Color(color.r, color.g, color.b, 255));
+		}
+
+		void draw(sf::RenderTarget& window, sf::RenderStates states) const override 
+		{
+			window.draw(Sprite);
+		}
+
 		std::string Name;
 		sf::Texture Texture;
 		sf::Sprite Sprite;
-	};
 
+		void PlayFadeOut() 
+		{
+			bPlayFadeIn = false;
+			bPlayFadeOut = true;
+			clock.restart();
+		}
+		void PlayFadeIn() 
+		{
+			bPlayFadeOut = false;
+			bPlayFadeIn = true;
+			clock.restart();
+		}
+
+
+		thor::FadeAnimation FadeIn = thor::FadeAnimation(0.5f, 0.0f);
+		thor::FadeAnimation FadeOut = thor::FadeAnimation(0.0f, 0.5f);
+		float FadeTime = 0.8f;	
+
+	private:
+		bool bPlayFadeOut = false;
+		bool bPlayFadeIn = false;
+		sf::Clock clock;
+
+	public:
+		std::function<void()> OnFadeOutEnd;
+		std::function<void()> OnFadeInEnd;
+	};
 
 	SceneController(const std::string& root, const ConfigOptions& opts, sf::RenderWindow& window);
 
@@ -57,13 +134,13 @@ public:
 
 	void AddBackground(const std::string& bg_name, const std::string& file_name);
 
-	void ShowBackground(const std::string& bg_name);
+	void ShowBackground(const std::string& bg_name, bool fade_anim = false);
 
-	void SetBackgroundColor(const sf::Color& color);
+	void SetBackgroundColor(const sf::Color& color, bool fade_anim = false);
 	
-	void ShowSprite(const std::string& sprite_name);
+	void ShowSprite(const std::string& sprite_name, bool fade_anim = false);
 
-	void HideSprite(const std::string& sprite_name);
+	void HideSprite(const std::string& sprite_name, bool fade_anim = false);
 
 	void SetText(const std::wstring& text, const std::wstring& name = L"");
 	void SetTextFont(const std::string& file_name);
@@ -93,7 +170,8 @@ private:
 	std::list<UserSprite*> ShownSprites;
 
 	std::vector<UserSprite> Backgrounds;
-	UserSprite* Background;
+	UserSprite* Background = nullptr;
+	UserSprite* FormerBackground = nullptr;
 
 private:
 	void ToggleHandlingInput();

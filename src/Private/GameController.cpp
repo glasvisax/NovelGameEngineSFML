@@ -58,7 +58,7 @@ void GameController::NextStatement()
 		case 0: 
 		{
 			Scene->SetText(L"zov сво ликвидирован", L"власов");
-			Scene->ShowSprite("milk_chan");
+			Scene->ShowSprite("milk_chan", true);
 			Scene->ShowGame();
 
 			frame++;
@@ -67,26 +67,26 @@ void GameController::NextStatement()
 		}
 		case 1:
 		{
-			Scene->HideSprite("milk_chan");
+			// TODO пофиксить
+			Scene->HideSprite("milk_chan", true);
 
 			Scene->SetText(L"машала брат ээээээээээээээээээээээээээээээээээээ", L"дорнан");
 			Scene->ShowBackground("2");
-			Scene->ShowSprite("dornan");
+			Scene->ShowSprite("dornan", true);
 
 			frame++;
-
-
 
 			break;
 		}
 		case 2:
 		{
-			Scene->HideSprite("dornan");	
+			Scene->HideSprite("dornan", true);	
 
 			Scene->SetText(L"как сам чувак эээээээээээээээээээээээ", L"власов");
 			Scene->SetBackgroundColor(sf::Color::White);
-			Scene->ShowSprite("milk_chan");
+			Scene->ShowSprite("milk_chan", true);
 			Scene->PlayAudioChannel("channel_0", true);
+			Scene->SetAudioChannelVolume("channel_0", 0.5f);
 			frame++;
 
 
@@ -94,11 +94,11 @@ void GameController::NextStatement()
 		}
 		case 3:
 		{
-			Scene->HideSprite("milk_chan");
+			Scene->HideSprite("milk_chan", true);
 
 			Scene->SetText(L"потихоньку братиш выбери плиз за кого ты", L"дорнан");
-			Scene->ShowBackground("2");
-			Scene->ShowSprite("dornan");
+			Scene->ShowBackground("2", true);
+			Scene->ShowSprite("dornan", true);
 
 			frame++;
 
@@ -107,16 +107,16 @@ void GameController::NextStatement()
 		}
 		case 4:
 		{
-			Scene->StopAudioChannel("channel_0");
+			//Scene->StopAudioChannel("channel_0");
 
 			Scene->PlayAudioChannel("channel_1");
-
-			Scene->HideSprite("dornan");
+			Scene->SetAudioChannelVolume("channel_1", 0.7f);
+			Scene->HideSprite("dornan", true);
 
 			Scene->SetTextCharacterSize(25.0f, 30.0f);
 			Scene->SetChoices({ L"роа", L"упа" });
 			Scene->SetBackgroundColor(sf::Color::White);
-			Scene->ShowSprite("milk_chan");
+			Scene->ShowSprite("milk_chan", true);
 			
 			frame++;
 

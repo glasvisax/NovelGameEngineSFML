@@ -58,11 +58,10 @@ namespace GUI
         float TimeToAddChar = 30.0f;
         bool bHaveName = false;
   
-
         std::vector<std::wstring> Responses;
         mutable std::vector<sf::Text> ResponseTexts;
         int CurrentResponse = -1;
-        sf::Color HoverColor;
+        sf::Color HoverColor = sf::Color::White;
 
   public:
         template <typename T>
