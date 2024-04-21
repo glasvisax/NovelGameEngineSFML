@@ -7,7 +7,7 @@
 #include <filesystem>
 
 // костыль :)
-std::vector<SceneController::UserSprite*> to_unshow;
+std::vector<SceneController::SceneSprite*> to_unshow;
 
 SceneController::SceneController(const std::string& root, const ConfigOptions& opts, sf::RenderWindow& window)
 	: Root(root)
@@ -69,6 +69,7 @@ void SceneController::Tick(float DeltaTime)
 		for (auto& s : ShownSprites) {
 			s->update();
 		}
+		DialogBox.update(Window);
 	}
 
 	if (!to_unshow.empty()) {
@@ -214,7 +215,6 @@ void SceneController::ShowBackground(const std::string& bg_name, bool fade_anim)
 	if (Backgrounds.empty()) return;
 	for (auto& bg : Backgrounds) {
 		if (bg.Name == bg_name) {
-			bg.Reset();
 			if (fade_anim) {
 				FormerBackground = Background;
 				Background = &bg;
@@ -223,8 +223,6 @@ void SceneController::ShowBackground(const std::string& bg_name, bool fade_anim)
 			} else {
 				Background = &bg;
 			}
-			
-			return;
 		}
 	}
 }
@@ -237,7 +235,7 @@ void SceneController::SetBackgroundColor(const sf::Color& color, bool fade_anim)
 		SetTextureColor(color, bg.Texture); 
 		prev_color = color;
 	}
-	bg.Reset();
+
 	if (fade_anim) {
 		FormerBackground = Background;
 		Background = &bg;
@@ -254,10 +252,13 @@ void SceneController::ShowSprite(const std::string& sprite_name, bool fade_anim)
 	if (Sprites.empty()) return;
 	for (auto& sp : Sprites) {
 		if (sp.Name == sprite_name) {
-			sp.Reset();
+
 			ShownSprites.push_back(&sp);
-			if(fade_anim) sp.PlayFadeIn();
-			//std::cout << sp.Sprite.getColor().g << "    ";
+			if (fade_anim) { 
+				sp.PlayFadeIn(); 
+				sp.PlayMoveAnimation(sf::Vector2f(100.f, 200.f), 30.f);
+			}
+
 			break;
 		}
 	}
@@ -269,7 +270,6 @@ void SceneController::HideSprite(const std::string& sprite_name, bool fade_anim)
 
 	auto it = std::find_if(ShownSprites.begin(), ShownSprites.end(), [&](const auto& sprite) { return sprite->Name == sprite_name; });
 	if (it == ShownSprites.end()) return;
-	(*it)->Reset();
 	if (fade_anim) {
 		(*it)->PlayFadeOut();
 		(*it)->OnFadeOutEnd = [this, it]() mutable { to_unshow.push_back(*it); };
@@ -295,9 +295,11 @@ void SceneController::SetTextureColor(const sf::Color& color, sf::Texture& textu
 	delete[] pixels;
 }
 
-void SceneController::SetText(const std::wstring& text, const std::wstring& name)
+void SceneController::SetText(const std::wstring& text, bool print_anim, const std::wstring& name)
 {
 	DialogBox.SetText(text, name);
+	if (print_anim) DialogBox.PlayPrintAnimation();
+	else DialogBox.StopPrintAnimation();
 }
 
 void SceneController::SetChoices(const std::vector<std::wstring>& options)

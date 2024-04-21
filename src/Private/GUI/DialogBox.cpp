@@ -17,6 +17,80 @@ namespace GUI
         Text.setCharacterSize(14.0f);
         CharacterName.setCharacterSize(14.0f + 5.0f);
     }
+
+    void DialogBox::draw(sf::RenderTarget& window, sf::RenderStates states)  const
+    {
+        window.draw(Background, states);
+
+        if (!bChoise) {
+            if (bHaveName) window.draw(CharacterName, states);
+            window.draw(Text, states);
+            if (true_callback) {
+                OnTextRenderEnd();
+                true_callback = false;
+            }
+
+        }
+        else {
+            for (auto& s : ResponseTexts) {
+                window.draw(s, states);
+                if (!true_select) true_select = true;
+            }
+        }
+    }
+
+    void DialogBox::update(sf::RenderWindow& window)
+    {
+        if (!bChoise && bPlayPrintAnim && TextPos < WideText.size() && TextClock.getElapsedTime().asMilliseconds() > TimeToAddChar) {
+
+            std::wstring new_str = Text.getString().toWideString();
+            new_str += WideText[TextPos];
+            sf::String wrapped_str(new_str);
+            WrapText(wrapped_str, BackgroundSize.x - Offset * 2, *Text.getFont(), Text.getCharacterSize(), false);
+            Text.setString(wrapped_str);
+            TextPos++;
+            TextClock.restart();
+            bPrinting = true;
+            if (TextPos >= WideText.size()) {
+                OnTextRenderEnd();
+                bPrinting = false;
+            }
+        } else if (bChoise && true_select) {
+            sf::Vector2i mouse_pos = sf::Mouse::getPosition(window);
+            for (auto& s : ResponseTexts) {
+                sf::FloatRect bounds = s.getGlobalBounds();
+                if (bounds.contains(static_cast<float>(mouse_pos.x), static_cast<float>(mouse_pos.y))) {
+                    s.setFillColor(HoverColor);
+                }
+                else {
+                    s.setFillColor(Text.getColor());
+                }
+            }
+            
+        }
+    }
+    void DialogBox::HandleInput(sf::Event& e, sf::RenderWindow& window)
+    {
+        if (e.mouseButton.button == sf::Mouse::Left && e.type == sf::Event::MouseButtonReleased) {
+            if (bChoise && true_select)
+            {
+                sf::Vector2i mouse_pos = sf::Mouse::getPosition(window);
+                for (int i = 0; i < ResponseTexts.size(); ++i) {
+                    sf::FloatRect bounds = ResponseTexts[i].getGlobalBounds();
+                    if (bounds.contains(static_cast<float>(mouse_pos.x), static_cast<float>(mouse_pos.y))) {
+                        OnChooseListener(i);
+                        bChoise = false;
+                        true_select = false;
+                        break;
+                    }
+                }
+            }
+            else if (TextPos < WideText.size() && bPrinting) {
+                SetFullText();
+            }
+        }
+        
+    }
     void DialogBox::SetCharacterSize(float text_size, float name_size)
     {
         text_size = text_size > 0 ? text_size : 1;
@@ -51,6 +125,35 @@ namespace GUI
         TextClock.restart();
         bPrinting = false;
         true_select = false;
+    }
+
+    void DialogBox::SetChoices(const std::vector<std::wstring>& responses)
+    {
+        bChoise = true;
+        Responses = responses;
+        ResponseTexts.clear();
+        int newline_num = 0;
+        for (int i = 0; i < responses.size(); ++i) {
+            sf::Text text;
+            sf::Vector2f position;
+            text.setFont(*Text.getFont());
+            text.setCharacterSize(Text.getCharacterSize());
+            text.setColor(Text.getColor());
+            sf::String wrapped(std::to_wstring(i + 1) + L". " + responses[i]);
+            if (ResponseTexts.empty())
+            {
+                position = sf::Vector2f(Background.getPosition().x + Offset, Background.getPosition().y + Offset);
+            }
+            else {
+                position = sf::Vector2f(ResponseTexts.back().getPosition().x, ResponseTexts.back().getPosition().y + (Text.getCharacterSize() + CharacterOffset) * (newline_num + 1));
+            }
+
+            newline_num = WrapText(wrapped, BackgroundSize.x - Offset * 2, *Text.getFont(), Text.getCharacterSize(), false);
+            text.setPosition(position);
+            text.setString(wrapped);
+
+            ResponseTexts.push_back(text);
+        }
     }
 
     void DialogBox::SetFont(const sf::Font& font)
@@ -88,77 +191,15 @@ namespace GUI
         BackgroundSize = background_size;
     }
 
-    void DialogBox::draw(sf::RenderTarget& window, sf::RenderStates states)  const
+    void DialogBox::PlayPrintAnimation()
     {
-        window.draw(Background, states);
-
-        if (!bChoise) {
-            if (bHaveName) window.draw(CharacterName, states);
-            
-            if (TextPos < WideText.size() && TextClock.getElapsedTime().asMilliseconds() > TimeToAddChar) {
-
-                std::wstring new_str = Text.getString().toWideString();
-                new_str += WideText[TextPos];
-                sf::String wrapped_str(new_str);
-                WrapText(wrapped_str, BackgroundSize.x - Offset * 2, *Text.getFont(), Text.getCharacterSize(), false);
-                Text.setString(wrapped_str);
-                TextPos++;
-                TextClock.restart();
-                bPrinting = true;
-                if (TextPos >= WideText.size()) {
-                    OnTextRenderEnd();
-                    bPrinting = false;
-                }
-            }
-            
-            if (true_callback) {
-                OnTextRenderEnd();
-                true_callback = false;
-            }
-            window.draw(Text, states);
-
-        } else {
-            sf::Vector2i mouse_pos = sf::Mouse::getPosition(static_cast<sf::RenderWindow&>(window));
-            for (auto& s : ResponseTexts) {
-                sf::FloatRect bounds = s.getGlobalBounds();
-
-                if (bounds.contains(static_cast<float>(mouse_pos.x), static_cast<float>(mouse_pos.y))) {
-                    s.setFillColor(HoverColor);
-                }
-                else {
-                    s.setFillColor(Text.getColor());
-                }
-                window.draw(s, states);
-                if(!true_select) true_select = true;
-            }
-        }
+        bPlayPrintAnim = true;
     }
 
-    void DialogBox::HandleInput(sf::Event& e, sf::RenderWindow& window)
+    void DialogBox::StopPrintAnimation()
     {
-
-        if (e.mouseButton.button == sf::Mouse::Left && e.type == sf::Event::MouseButtonReleased) {
-            if (bChoise && true_select)
-            {
-                sf::Vector2i mouse_pos = sf::Mouse::getPosition(static_cast<sf::RenderWindow&>(window));
-                for (int i = 0; i < ResponseTexts.size(); ++i) {
-                    sf::FloatRect bounds = ResponseTexts[i].getGlobalBounds();
-                    if (bounds.contains(static_cast<float>(mouse_pos.x), static_cast<float>(mouse_pos.y))) {
-                        OnChooseListener(i);
-                        bChoise = false;
-                        true_select = false;
-                        break;
-                    }
-                }
-            } else if(TextPos < WideText.size() && bPrinting) {
-                TextPos = WideText.size();
-                sf::String wrapped(WideText);
-                WrapText(wrapped, BackgroundSize.x - (Offset * 2.0f), *Text.getFont(), Text.getCharacterSize(), false);
-                Text.setString(wrapped);
-                bPrinting = false;
-                true_callback = true;
-            }
-        }
+        bPlayPrintAnim = false;
+        SetFullText();
     }
 
     int DialogBox::WrapText(sf::String& string, unsigned width, const sf::Font& font, unsigned charicter_size, bool bold) const
@@ -196,34 +237,15 @@ namespace GUI
         return newline_count;
     }
 
-
-    void DialogBox::SetChoices(const std::vector<std::wstring>& responses) 
+    void DialogBox::SetFullText()
     {
-        bChoise = true;
-        Responses = responses;
-        ResponseTexts.clear();
-        int newline_num = 0;
-        for (int i = 0; i < responses.size(); ++i) {
-            sf::Text text;
-            sf::Vector2f position;
-            text.setFont(*Text.getFont());
-            text.setCharacterSize(Text.getCharacterSize());
-            text.setColor(Text.getColor());
-            sf::String wrapped(std::to_wstring(i + 1) + L". " + responses[i]);
-            if (ResponseTexts.empty()) 
-            {
-                position = sf::Vector2f(Background.getPosition().x + Offset, Background.getPosition().y + Offset);
-            }
-            else {
-                position = sf::Vector2f(ResponseTexts.back().getPosition().x, ResponseTexts.back().getPosition().y + (Text.getCharacterSize() + CharacterOffset) * (newline_num + 1));
-            }
-
-            newline_num = WrapText(wrapped, BackgroundSize.x - Offset * 2, *Text.getFont(), Text.getCharacterSize(), false);
-            text.setPosition(position);
-            text.setString(wrapped);
-
-            ResponseTexts.push_back(text);
-        } 
+        TextPos = WideText.size();
+        sf::String wrapped(WideText);
+        WrapText(wrapped, BackgroundSize.x - (Offset * 2.0f), *Text.getFont(), Text.getCharacterSize(), false);
+        Text.setString(wrapped);
+        bPrinting = false;
+        true_callback = true;
     }
+    
 }
 

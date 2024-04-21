@@ -57,7 +57,7 @@ void GameController::NextStatement()
 	{
 		case 0: 
 		{
-			Scene->SetText(L"zov сво ликвидирован", L"власов");
+			Scene->SetText(L"zov сво ликвидирован", true, L"власов");
 			Scene->ShowSprite("milk_chan", true);
 			Scene->ShowGame();
 
@@ -67,10 +67,9 @@ void GameController::NextStatement()
 		}
 		case 1:
 		{
-			// TODO пофиксить
 			Scene->HideSprite("milk_chan", true);
 
-			Scene->SetText(L"машала брат ээээээээээээээээээээээээээээээээээээ", L"дорнан");
+			Scene->SetText(L"машала брат ээээээээээээээээээээээээээээээээээээ", true, L"дорнан");
 			Scene->ShowBackground("2");
 			Scene->ShowSprite("dornan", true);
 
@@ -82,7 +81,7 @@ void GameController::NextStatement()
 		{
 			Scene->HideSprite("dornan", true);	
 
-			Scene->SetText(L"как сам чувак эээээээээээээээээээээээ", L"власов");
+			Scene->SetText(L"как сам чувак эээээээээээээээээээээээ", true, L"власов");
 			Scene->SetBackgroundColor(sf::Color::White);
 			Scene->ShowSprite("milk_chan", true);
 			Scene->PlayAudioChannel("channel_0", true);
@@ -96,7 +95,7 @@ void GameController::NextStatement()
 		{
 			Scene->HideSprite("milk_chan", true);
 
-			Scene->SetText(L"потихоньку братиш выбери плиз за кого ты", L"дорнан");
+			Scene->SetText(L"потихоньку братиш выбери плиз за кого ты", false, L"дорнан");
 			Scene->ShowBackground("2", true);
 			Scene->ShowSprite("dornan", true);
 
@@ -120,7 +119,6 @@ void GameController::NextStatement()
 			
 			frame++;
 
-
 			break;
 		}
 		
@@ -130,11 +128,11 @@ void GameController::NextStatement()
 
 			if (ChosenResponse == 0) {
 				Scene->SetTextCharacterSize(40.0f, 20.0f);
-				Scene->SetText(L"базовичок ты наш слонярский УУХ!!!", L"milk_chan");
+				Scene->SetText(L"базовичок ты наш слонярский УУХ!!!", false, L"milk_chan");
 
 			}
 			else if(ChosenResponse == 1) {
-				Scene->SetText(L"хохол попался", L"milk_chan");
+				Scene->SetText(L"хохол попался", false, L"milk_chan");
 			}
 			frame = 4;
 			

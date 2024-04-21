@@ -17,9 +17,9 @@ class SceneController : public BaseController
 {
 public:
 
-	struct UserSprite : sf::Drawable
+	struct SceneSprite : sf::Drawable
 	{
-		UserSprite(const UserSprite& other)
+		SceneSprite(const SceneSprite& other)
 		{
 			Name = other.Name;
 			Texture = other.Texture;
@@ -29,7 +29,7 @@ public:
 			Sprite.scale(other.Sprite.getScale());
 		}
 
-		UserSprite(const std::string& name, const sf::Texture& texture)
+		SceneSprite(const std::string& name, const sf::Texture& texture)
 			: Name(name)
 			, Texture(texture)
 		{
@@ -51,8 +51,7 @@ public:
 					bPlayFadeIn = false;
 					if (OnFadeInEnd) OnFadeInEnd();
 				}
-			}
-			else if (bPlayFadeOut)
+			} else if (bPlayFadeOut)
 			{
 				float elapsedTime = clock.getElapsedTime().asSeconds();
 				float progress = elapsedTime / FadeTime;
@@ -65,6 +64,23 @@ public:
 					bPlayFadeOut = false;
 					if (OnFadeOutEnd) OnFadeOutEnd();
 					return;
+				}
+			} 
+			if (bPlayMoveAnimation)
+			{
+				float elapsedTime = moveAnimationClock.getElapsedTime().asSeconds();
+				float progress = elapsedTime / moveAnimationDuration;
+				progress = progress > 1.f ? 1.f : progress;
+
+				sf::Vector2f currentPosition = Sprite.getPosition();
+				sf::Vector2f targetPosition = moveAnimationTarget;
+
+				Sprite.setPosition(currentPosition + (targetPosition - currentPosition) * progress);
+
+				if (progress >= 1.f)
+				{
+					bPlayMoveAnimation = false;
+					if (OnMoveAnimationEnd) OnMoveAnimationEnd();
 				}
 			}
 			
@@ -97,7 +113,13 @@ public:
 			bPlayFadeIn = true;
 			clock.restart();
 		}
-
+		void PlayMoveAnimation(const sf::Vector2f& targetPosition, float duration)
+		{
+			bPlayMoveAnimation = true;
+			moveAnimationTarget = targetPosition;
+			moveAnimationDuration = duration;
+			moveAnimationClock.restart();
+		}
 
 		thor::FadeAnimation FadeIn = thor::FadeAnimation(0.5f, 0.0f);
 		thor::FadeAnimation FadeOut = thor::FadeAnimation(0.0f, 0.5f);
@@ -108,9 +130,17 @@ public:
 		bool bPlayFadeIn = false;
 		sf::Clock clock;
 
+	private:
+
+		bool bPlayMoveAnimation = false;
+		sf::Vector2f moveAnimationTarget;
+		float moveAnimationDuration = 1.0f;
+		sf::Clock moveAnimationClock;
+
 	public:
 		std::function<void()> OnFadeOutEnd;
 		std::function<void()> OnFadeInEnd;
+		std::function<void()> OnMoveAnimationEnd;
 	};
 
 	SceneController(const std::string& root, const ConfigOptions& opts, sf::RenderWindow& window);
@@ -142,7 +172,7 @@ public:
 
 	void HideSprite(const std::string& sprite_name, bool fade_anim = false);
 
-	void SetText(const std::wstring& text, const std::wstring& name = L"");
+	void SetText(const std::wstring& text, bool print_anim = true, const std::wstring& name = L"");
 	void SetTextFont(const std::string& file_name);
 	void SetTextCharacterSize(float text_size, float name_size = -1);
 	void SetTextColor(const sf::Color& color);
@@ -166,12 +196,12 @@ private:
 	sf::Font TextFont;
 	sf::Music Music;
 
-	std::vector<UserSprite> Sprites;
-	std::list<UserSprite*> ShownSprites;
+	std::vector<SceneSprite> Sprites;
+	std::list<SceneSprite*> ShownSprites;
 
-	std::vector<UserSprite> Backgrounds;
-	UserSprite* Background = nullptr;
-	UserSprite* FormerBackground = nullptr;
+	std::vector<SceneSprite> Backgrounds;
+	SceneSprite* Background = nullptr;
+	SceneSprite* FormerBackground = nullptr;
 
 private:
 	void ToggleHandlingInput();
@@ -194,81 +224,3 @@ public:
 private:
 	std::map<std::string, std::shared_ptr<sf::Music>> AudioChannels;
 };
-
-/*
-Использование FadeAnimation из Thor для перехода между текстурами
-Библиотека Thor предоставляет удобный класс FadeAnimation, который идеально подходит для создания плавного перехода между текстурами фона.
-Вот как использовать FadeAnimation для вашей задачи:
-Включите заголовочный файл:
-#include <Thor/Animations.hpp>
-Use code with caution.
-C++
-Создайте объекты sf::Sprite для каждой текстуры фона.
-Создайте объект FadeAnimation:
-// Полное время анимации - 1 секунда
-sf::Time fadeTime = sf::seconds(1.f);
-
-// FadeAnimation с плавным появлением (0.25 секунды) и исчезновением (0.5 секунды)
-thor::FadeAnimation fadeAnimation(0.25f, 0.5f);
-Use code with caution.
-C++
-Создайте объект sf::Clock для отслеживания времени.
-В цикле отрисовки:
-Обновите время анимации:
-sf::Time elapsedTime = clock.restart();
-float progress = elapsedTime / fadeTime;
-Use code with caution.
-C++
-Примените FadeAnimation к текущей текстуре фона:
-fadeAnimation(currentBackgroundSprite, progress);
-Use code with caution.
-C++
-Примените FadeAnimation к новой текстуре фона (с инвертированным прогрессом):
-fadeAnimation(newBackgroundSprite, 1.f - progress);
-Use code with caution.
-C++
-Отрисуйте обе текстуры фона.
-После завершения анимации (progress >= 1.f):
-Установите новую текстуру как текущую.
-Преимущества использования FadeAnimation:
-Простота: Не требует написания собственных шейдеров или сложной логики альфа-смешивания.
-Гибкость: Позволяет настроить время появления и исчезновения текстур.
-Интеграция с SFML: FadeAnimation работает напрямую с объектами sf::Sprite.
-Пример кода:
-#include
-#include
-
-int main()
-{
-	// ... (Создание окна, текстур и спрайтов) ...
-
-	sf::Clock clock;
-	sf::Time fadeTime = sf::seconds(1.f);
-	thor::FadeAnimation fadeAnimation(0.25f, 0.5f);
-
-	while (window.isOpen())
-	{
-		// ... (Обработка событий) ...
-
-		sf::Time elapsedTime = clock.restart();
-		float progress = elapsedTime / fadeTime;
-
-		fadeAnimation(currentBackgroundSprite, progress);
-		fadeAnimation(newBackgroundSprite, 1.f - progress);
-
-		window.clear();
-		window.draw(currentBackgroundSprite);
-		window.draw(newBackgroundSprite);
-		window.display();
-
-		if (progress >= 1.f)
-		{
-			currentBackgroundSprite = newBackgroundSprite;
-			// ... (Загрузить новую текстуру для newBackgroundSprite) ...
-			clock.restart();
-		}
-	}
-
-	return 0;
-}
-*/

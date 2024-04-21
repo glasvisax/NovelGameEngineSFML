@@ -20,6 +20,12 @@ namespace GUI
 
         void draw(sf::RenderTarget& window, sf::RenderStates states) const override;
 
+        void update(sf::RenderWindow& window);
+
+        void PlayPrintAnimation();
+
+        void StopPrintAnimation();
+
         void HandleInput(sf::Event& e, sf::RenderWindow& window);
 
     public:
@@ -46,20 +52,20 @@ namespace GUI
 
         bool bChoise = false;
         sf::Font Font;
-        mutable sf::Text Text;
+        sf::Text Text;
         sf::Text CharacterName;
         std::wstring WideText;
 
         sf::ConvexShape Background;
         sf::Vector2f BackgroundSize;
-        mutable sf::Clock TextClock;
-        mutable size_t TextPos = 0;
+        sf::Clock TextClock;
+        size_t TextPos = 0;
 
         float TimeToAddChar = 30.0f;
         bool bHaveName = false;
   
         std::vector<std::wstring> Responses;
-        mutable std::vector<sf::Text> ResponseTexts;
+        std::vector<sf::Text> ResponseTexts;
         int CurrentResponse = -1;
         sf::Color HoverColor = sf::Color::White;
 
@@ -81,5 +87,8 @@ namespace GUI
         std::function<void()> OnTextRenderEnd;
         int WrapText(sf::String& string, unsigned width, const sf::Font& font, unsigned charicter_size, bool bold) const;
         mutable bool bPrinting = false;
+        mutable bool bPlayPrintAnim = false;
+
+        void SetFullText();
     };
 }
