@@ -90,9 +90,6 @@ namespace GUI
 
             std::function<void()> m_OnClickListener;
             mutable bool bIsClicked = false;
-
-            
-
     };
 };
 

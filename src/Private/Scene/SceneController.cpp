@@ -1,5 +1,4 @@
-#include "SceneController.h"
-#include "GameController.h"
+#include "Scene/SceneController.h"
 #include <Thor/Animations.hpp>
 
 #include <cassert>
@@ -7,7 +6,7 @@
 #include <filesystem>
 
 // êîñòûëü :)
-std::vector<SceneController::SceneSprite*> to_unshow;
+std::vector<SceneSprite*> to_unshow;
 
 SceneController::SceneController(const std::string& root, const ConfigOptions& opts, sf::RenderWindow& window)
 	: Root(root)
@@ -23,11 +22,7 @@ SceneController::SceneController(const std::string& root, const ConfigOptions& o
 
 	AddBackground("2", "2.png");
 
-	// ÑÍÀ×ÀËÀ ÄÎÁÀÂËßÅÌ ÂÑÅ ÂÎÇÌÎÆÍÛÅ ÔÎÍÛ ÏÎÒÎÌ ÓÆÅ 
-	// ÓÊÀÇÛÂÀÅÌ ÔÎÍÛ ÈÇ ÄÎÁÀÂËÅÍÍÛÕ, ÈÇ ÇÀ ÐÅÀËËÎÊÀÖÈÈ ÓÊÀÇÀÒÅËÜ ÒÅÐßÅÒÑß
-
 	Background = &Backgrounds.front();
-	bPlayBackgAnim = true;
 
 	MainMenu.SetBoxPosition(sf::Vector2f(Options.width / 2, Options.height / 2));
 	MainMenu.SetFont(TextFont); // ØÐÈÔÒ ÓÊÀÇÛÂÀÒÜ ÎÁßÇÀÒÅËÜÍÎ!!!!!!!!!!!!!
@@ -47,18 +42,38 @@ SceneController::SceneController(const std::string& root, const ConfigOptions& o
 	AddAudioChannel("channel_1", "2.mp3");
 }
 
-void SceneController::BeginPlay()
+void SceneController::StartScene()
 {
-	assert(Game && "SceneController is nullptr");
-
+	bStart = true;
 	auto play_btn = MainMenu.GetButtonByText("Play");
 	if (play_btn) { play_btn->BindOnClick(this, &SceneController::ToNextFrame); }
 
 	auto exit_btn = MainMenu.GetButtonByText("Exit");
-	if (exit_btn) { exit_btn->BindOnClick(Game, &GameController::OnExitGame); }
+	if (exit_btn) { exit_btn->BindOnClick(this, &SceneController::Exit); }
 
 	DialogBox.BindOnChoose(this, &SceneController::OnChoiceSelected);
-	DialogBox.BindOnRenderEnd(this, &SceneController::ToggleHandlingInput);
+	DialogBox.BindOnRenderEnd(this, &SceneController::WaitNextInput);
+}
+
+void SceneController::HandleInput(sf::Event e)
+{
+	if (e.mouseButton.button == sf::Mouse::Left && e.type == sf::Event::MouseButtonReleased && bWaitNextInput){
+		ToNextFrame();
+		bWaitNextInput = false;
+		return;
+	}
+
+	if (!bPlay) {
+		MainMenu.HandleInput(e, Window);
+	}
+	else {
+		DialogBox.HandleInput(e, Window);
+	}
+}
+
+void SceneController::StartGame()
+{
+	bPlay = true;
 }
 
 void SceneController::Tick(float DeltaTime)
@@ -74,33 +89,37 @@ void SceneController::Tick(float DeltaTime)
 
 	if (!to_unshow.empty()) {
 		for (auto& us : to_unshow) {
-			HideSprite(us->Name, false);
+			HideSprite(us->GetName(), false);
 		}
 		to_unshow.clear();
 	}
 	Render();
 }
 
-void SceneController::ToggleHandlingInput()
+void SceneController::Exit()
 {
-	StopHandlingInput();
-	Game->StartHandlingInput();
+	Window.close();
 }
 
 void SceneController::ToNextFrame()
 {
-	StopHandlingInput();
 	Game->Next();
+}
+
+void SceneController::WaitNextInput()
+{
+	bWaitNextInput = true;
 }
 
 void SceneController::OnChoiceSelected(unsigned int choice)
 {
 	Game->SetCurrentChoice(choice);
-	Game->Next();
+	ToNextFrame();
 }
 
 void SceneController::Render()
 {
+	Window.clear();
 	if(FormerBackground) Window.draw(*FormerBackground);
 	Window.draw(*Background);
 
@@ -109,38 +128,11 @@ void SceneController::Render()
 	}
 	else {
 		for (auto& s : ShownSprites) {
-			Window.draw(s->Sprite);
+			Window.draw(*s);
 		}
 		Window.draw(DialogBox);
 	}
-}
-
-void SceneController::HandleInput(sf::Event e)
-{	
-	if (!bHandleInput) return;
-
-	if (!bPlay) {
-		MainMenu.HandleInput(e, Window);
-	}
-	else {
-		DialogBox.HandleInput(e, Window);
-	}
-}
-
-void SceneController::StopHandlingInput()
-{
-	bHandleInput = false;
-}
-
-void SceneController::StartHandlingInput()
-{
-	bHandleInput = true;
-}
-
-void SceneController::ShowGame()
-{
-	bPlay = true;
-	StartHandlingInput();
+	Window.display();
 }
 
 sf::Texture SceneController::GetImageTexture(const std::string& file_name)

@@ -28,41 +28,23 @@ int Engine::Start()
 
 	game.SetSceneController(&scene);
 	scene.SetGameController(&game);
+	scene.StartScene();
 
-	bool first_iter = true;
 	sf::Clock timer;
 
 	while (window.isOpen()) {
 
-		if (first_iter) {
-			game.BeginPlay();
-			scene.BeginPlay();
-			first_iter = false;
-		}
-
 		sf::Event event;
 		while(window.pollEvent(event)) {
-
-
 			if (event.type == sf::Event::Closed) {
 				window.close();
 			}
-
-			game.HandleInput(event);
 			scene.HandleInput(event);
-			
 		}
-		window.clear();
-
 		float time = timer.getElapsedTime().asMicroseconds();
-		game.Tick(time);
 		scene.Tick(time);
 
-
-		window.display();
-
 		timer.restart();
-
 	}
 
 	return 0;

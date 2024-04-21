@@ -1,4 +1,4 @@
-#include <GUI/Button.h>
+#include <Scene/GUI/Button.h>
 namespace GUI {
     Button::Button(const std::wstring& s, sf::Font& font, const sf::Vector2f& position, ButtonStyle style, const sf::Vector2f& size, unsigned int font_size)
     {

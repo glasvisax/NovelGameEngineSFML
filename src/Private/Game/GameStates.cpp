@@ -8,7 +8,6 @@ GameController::GameController(const std::string& root, const ConfigOptions& opt
 	: Root(root)
 	, Options(opts)
 	, Statements(statements)
-	, Window(window)
 {
 
 }
@@ -18,39 +17,14 @@ void GameController::SetSceneController(SceneController* scene)
 	this->Scene = scene;
 }
 
-void GameController::HandleInput(sf::Event e)
-{
-	if (bHandleInput && e.mouseButton.button == sf::Mouse::Left && e.type == sf::Event::MouseButtonReleased) 
-	{
-		Next();
-	}
-}
-
-void GameController::StopHandlingInput()
-{
-	bHandleInput = false;
-}
-
-void GameController::StartHandlingInput()
-{
-	bHandleInput = true;
-}
-
-void GameController::OnExitGame()
-{
-	Window.close();
-}
-
 void GameController::Next()
 {
-	StopHandlingInput();
+	// ...
 	NextStatement();
-	Scene->StartHandlingInput();
 }
 
 void GameController::NextStatement()
 {
-	//TODO анимации для спрайтов/ фонов. Аудио
 	Scene->SetTextCharacterSize(25.0f, 30.0f);
 	
 	switch (frame) 
@@ -59,7 +33,7 @@ void GameController::NextStatement()
 		{
 			Scene->SetText(L"zov сво ликвидирован", true, L"власов");
 			Scene->ShowSprite("milk_chan", true);
-			Scene->ShowGame();
+			Scene->StartGame();
 
 			frame++;
 
@@ -141,15 +115,6 @@ void GameController::NextStatement()
 	}
 
 	return;
-}
-
-void GameController::BeginPlay()
-{
-	assert(Scene && "SceneController is nullptr");
-}
-
-void GameController::Tick(float DeltaTime)
-{
 }
 
 void GameController::SetCurrentChoice(unsigned int choise)

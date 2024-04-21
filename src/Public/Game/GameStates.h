@@ -5,28 +5,16 @@
 
 #include "Script.h"
 #include <vector>
-#include "BaseController.h"
 
 class SceneController;
 
-class GameController : public BaseController
+class GameController 
 {
 public:
 
 	GameController(const std::string& root, const ConfigOptions& opts, const std::vector<Statement>& statements, sf::RenderWindow& window);
 
 	void SetSceneController(SceneController* scene);
-
-public:
-
-	void HandleInput(sf::Event e);
-	void StopHandlingInput();
-	void StartHandlingInput();
-	void OnExitGame();
-
-	virtual void BeginPlay() override;
-
-	virtual void Tick(float DeltaTime) override;
 
 public:
 
@@ -39,13 +27,10 @@ private:
 	const ConfigOptions& Options;
 	const std::string& Root;
 	const std::vector<Statement>& Statements;
-	sf::RenderWindow& Window;
 	SceneController* Scene = nullptr;
 
 private:
 	unsigned int frame = 0;
-	bool bGameStarted = false;
-	bool bHandleInput = false;
-	unsigned int ChosenResponse = 0;
+	unsigned int ChosenResponse = -1;
 };
 

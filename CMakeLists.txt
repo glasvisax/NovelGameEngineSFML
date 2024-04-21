@@ -6,9 +6,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 project(GameProject LANGUAGES CXX)
 
-FILE(GLOB_RECURSE headers src/Public/*.h src/Public/GUI/*.h)
+FILE(GLOB_RECURSE headers src/Public/*.h src/Public/Scene/*.h src/Public/Scene/GUI/*.h src/Public/Game/*.h src/Public/Game/Script/*.h src/Public/Game/Config/*.h)
 
-FILE(GLOB_RECURSE sources src/Private/*.cpp src/*.cpp src/Private/GUI/*.cpp)
+FILE(GLOB_RECURSE sources src/Private/*.cpp src/Private/Scene/*.cpp src/Private/Scene/GUI/*.cpp src/Private/Game/*.cpp src/Private/Game/Script/*.cpp src/Private/Game/Config/*.cpp)
 
 set(SFML_STATIC_LIBRARIES TRUE)
 
