@@ -4,9 +4,11 @@
 #include <string>
 #include <functional>
 
+#include "Scene/SceneItem.h"
+
 namespace GUI
 {
-    class DialogBox : public sf::Drawable {
+    class DialogBox : public SceneItem {
 
     public:
         DialogBox();
@@ -18,38 +20,28 @@ namespace GUI
             float outline_thickness = 0.0f,
             const sf::Color& outline_color = sf::Color::Black);
 
-        void draw(sf::RenderTarget& window, sf::RenderStates states) const override;
-
-        void update(sf::RenderWindow& window);
+        virtual void Draw(sf::RenderTarget& window, sf::RenderStates states) const override;
+        virtual void Update(sf::RenderWindow& window) override;
+        virtual void HandleInput(sf::Event e, sf::RenderWindow& window) override;
 
         void PlayPrintAnimation();
-
         void StopPrintAnimation();
 
-        void HandleInput(sf::Event& e, sf::RenderWindow& window);
-
     public:
-
         void SetCharacterSize(float text_size, float name_size = -1);
 
         void SetText(const std::wstring& text, const std::wstring& name = L"");
-
         void SetFont(const sf::Font& font);
-
         void SetTextColor(const sf::Color& text_color);
-
         void SetTextHoverColor(const sf::Color& color);
-        
+
         void SetTimeToAddChar(float time) { TimeToAddChar = time; }
 
     public:
-
         void SetChoices(const std::vector<std::wstring>& responses);
-
-        int GetSelectedChoice() const { return CurrentResponse; }
+        unsigned int GetSelectedResponse() const { return CurrentResponse; }
 
     private:
-
         bool bChoise = false;
         sf::Font Font;
         sf::Text Text;
@@ -66,28 +58,19 @@ namespace GUI
   
         std::vector<std::wstring> Responses;
         std::vector<sf::Text> ResponseTexts;
-        int CurrentResponse = -1;
+        unsigned int CurrentResponse = -1;
         sf::Color HoverColor = sf::Color::White;
 
-  public:
-        template <typename T>
-        void BindOnChoose(T* object, void (T::* method)(unsigned int))
-        {
-            OnChooseListener = [object, method](unsigned int value) { (object->*method)(value); };
-        }
 
-        template <typename T>
-        void BindOnRenderEnd(T* object, void (T::* method)())
-        {
-            OnTextRenderEnd = [object, method]() { (object->*method)(); };
-        }
+    public:
+        std::function<void()> OnChoiceSelected = nullptr;
+        std::function<void()> OnTextRendered = nullptr;
+
     private:
-
-        std::function<void(unsigned int)> OnChooseListener;
-        std::function<void()> OnTextRenderEnd;
         int WrapText(sf::String& string, unsigned width, const sf::Font& font, unsigned charicter_size, bool bold) const;
         mutable bool bPrinting = false;
         mutable bool bPlayPrintAnim = false;
+        bool bChangedState;
 
         void SetFullText();
     };

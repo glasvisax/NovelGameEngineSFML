@@ -9,37 +9,46 @@
 #include "GUI.h"
 #include "SceneSprite.h"
 
+using namespace GUI;
 class SceneController
 {
 public:
-
 	SceneController(const std::string& root, const ConfigOptions& opts, sf::RenderWindow& window);
 
 public:
-	void StartScene();
-	void Tick(float DeltaTime);
 	void Exit();
+	void StartScene();
+	std::function<void()> ToNextFrameEvent = nullptr;
+	std::function<void()> EscapePressEvent = nullptr;
 
+private:
+	void GlobalHandler();
 	void HandleInput(sf::Event e);
-
-	void StartGame();
+	void Update();
+	void Render();
 
 public:
-	void AddSprite(const std::string& sprite_name, const std::string& file_name, const sf::Vector2u& position = { 50, 40 }, bool user_scale = false, float scale = 1.0f);
-	void ShowSprite(const std::string& sprite_name, bool fade_anim = false);
-	void HideSprite(const std::string& sprite_name, bool fade_anim = false);
+	void AddSprite(const std::string& sprite_name, const std::string& file_name, const sf::Vector2f& position = { 50, 40 }, float scale = 1.0f);
+	void ShowSprite(const std::string& sprite_name, float fade_time = 0.0f);
+	void HideSprite(const std::string& sprite_name, float fade_time = 0.0f);
+	void SetSpritePosition(const std::string& sprite_name, sf::Vector2f pos);
+	void PlaySpriteMoveAnim(const std::string& sprite_name, sf::Vector2f pos, float time = 5.0f);
+	void HideAllSprites();
 
 	void AddBackground(const std::string& bg_name, const std::string& file_name);
-	void ShowBackground(const std::string& bg_name, bool fade_anim = false);
-	void SetBackgroundColor(const sf::Color& color, bool fade_anim = false);
+	void ShowBackground(const std::string& bg_name, float fade_time = 0.0f);
+	void SetBackgroundColor(const sf::Color& color, float fade_time = 0.0f);
 
-	void SetText(const std::wstring& text, bool print_anim = true, const std::wstring& name = L"");
-	void SetTextFont(const std::string& file_name);
-	void SetTextCharacterSize(float text_size, float name_size = -1);
-	void SetTextColor(const sf::Color& color);
-	void SetTextHoverColor(const sf::Color& color);
-	
+	MenuBox& AddMenu(const sf::Vector2f& pos, const std::vector<std::wstring>& buttons, std::string name);
+	void ShowMenu(const std::string& name);
+	void HideMenu(const std::string& name);
+
+	DialogBox& SetupDialogBox(const sf::Vector2f& background_size, const sf::Vector2f& position, float corner_radius = 10.0f, const sf::Color& background_color = sf::Color(128, 128, 128, 200), float outline_thickness = 0.0f, const sf::Color& outline_color = sf::Color::Black);
+	void ShowDialogBox();
+	void HideDialogBox();
+	void SetText(const std::wstring& text, const std::wstring& name, bool print_anim = false);
 	void SetChoices(const std::vector<std::wstring>& options);
+	unsigned int GetCurrentResponse();
 
 private:
 	const ConfigOptions& Options;
@@ -49,36 +58,33 @@ private:
 private:
 	bool bStart = false;
 	bool bPlay = false;
-	bool bWaitNextInput = false;
-	GUI::MenuBox MainMenu;
-	GUI::DialogBox DialogBox;
-	sf::Font TextFont;
-	sf::Music Music;
-
-	std::vector<SceneSprite> Sprites;
-	std::list<SceneSprite*> ShownSprites;
-
-	std::vector<SceneSprite> Backgrounds;
-	SceneSprite* Background = nullptr;
-	SceneSprite* FormerBackground = nullptr;
+	bool bWaitNextInput = false;	
 
 private:
-	void ToNextFrame();
-	void WaitNextInput();
-	void OnChoiceSelected(unsigned int choice);
-	void Render();
+	sf::Font TextFont;
 
+	std::vector<SceneSprite> Backgrounds;
+	std::pair<SceneSprite*, SceneSprite*> Background;
+	std::vector<MenuBox> Menus;
+	std::vector<SceneSprite> Sprites;
+	DialogBox DialogBox;
+
+private:
 	sf::Texture GetImageTexture(const std::string& file_name);
 	std::string GetFilePath(const std::string& file_name);
-	void SetTextureColor(const sf::Color& color, sf::Texture& texture);
+	void SetTextureColor(sf::Texture& texture, const sf::Color& color);
 
 public:
-	void AddAudioChannel(const std::string& name, const std::string& file_name);
-	void PlayAudioChannel(const std::string& name, bool loop = false);
-	void StopAudioChannel(const std::string& name);
-	void SetAudioChannelVolume(const std::string& name, float volume);
-	void ReloadAudioChannel(const std::string& name, const std::string& file_name);
+	void AddChannel(const std::string& name, const std::string& file_name);
+	void PlayChannel(const std::string& name, bool loop = false);
+	void StopChannel(const std::string& name);
+	void SetChannelVolume(const std::string& name, float volume);
+	void ReloadChannel(const std::string& name, const std::string& file_name);
+	void PausePlayingChannels();
+	void UnPausePlayingChannels();
+	void StopAllChannels();
 
 private:
 	std::map<std::string, std::shared_ptr<sf::Music>> AudioChannels;
+
 };

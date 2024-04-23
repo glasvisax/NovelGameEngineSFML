@@ -1,17 +1,18 @@
-#include "Config.h"
-#include "ConfigParser.h"
+#include "Game/Config/Config.h"
+#include "Game/Config/ConfigParser.h"
+
 #include <cassert>
 #include <string>
 
-const int WINDOW_WIDTH = 640;
-const int WINDOW_HEIGHT = 480;
+const int DEFAULT_WINDOW_WIDTH = 640;
+const int DEFAULT_WINDOW_HEIGHT = 480;
 const std::string TITLE = "GameController";
 
 ConfigOptions Config::Parse(std::string filename) 
 {
 	ConfigOptions opts;
-	opts.width = WINDOW_WIDTH;
-	opts.height = WINDOW_HEIGHT;
+	opts.width = DEFAULT_WINDOW_WIDTH;
+	opts.height = DEFAULT_WINDOW_HEIGHT;
 	opts.title = TITLE;
 
 	ConfigParser settings;

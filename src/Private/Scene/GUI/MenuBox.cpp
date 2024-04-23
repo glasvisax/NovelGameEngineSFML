@@ -1,9 +1,11 @@
-#include "GUI/MenuBox.h"
+#include "Scene/GUI/MenuBox.h"
+
 #include <cassert>
 #include <algorithm> 
+
 namespace GUI
 {
-    GUI::Button& MenuBox::AddButton(std::wstring text) 
+    Button& MenuBox::AddButton(std::wstring text) 
     {
         BoxSize = sf::Vector2f(ButtonSize.x, BoxSize.y + ButtonSize.y + Space);
 
@@ -14,7 +16,7 @@ namespace GUI
     }
 
 
-    void MenuBox::HandleInput(sf::Event& event, sf::RenderWindow& window)
+    void MenuBox::HandleInput(sf::Event event, sf::RenderWindow& window)
     {
         for (auto& Button : Buttons)
         {
@@ -22,7 +24,7 @@ namespace GUI
         }
     }
 
-    void MenuBox::draw(sf::RenderTarget& window, sf::RenderStates states) const
+    void MenuBox::Draw(sf::RenderTarget& window, sf::RenderStates states) const
     {
         for (const auto& Button : Buttons)
         {
@@ -30,10 +32,15 @@ namespace GUI
         }
     }
 
-    Button* MenuBox::GetButtonByText(const std::string& text)
+    void MenuBox::Update(sf::RenderWindow& window)
+    {
+        // update...
+    }
+
+    Button* MenuBox::GetButtonByText(const std::wstring& text)
     {
         for (auto& btn : Buttons) {
-            if (std::string(btn.GetText().getString()) == text) {
+            if (btn.GetText().getString().toWideString() == text) {
                 return &btn;
             }
         }

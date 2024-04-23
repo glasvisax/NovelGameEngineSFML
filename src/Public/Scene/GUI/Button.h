@@ -1,11 +1,12 @@
 #pragma once
 
-#include <iostream>
-
 #include <SFML/Graphics.hpp>
-#include <THOR/Shapes.hpp>
-#include <THOR/Graphics.hpp>
+#include <Thor/Shapes.hpp>
+#include <Thor/Graphics.hpp>
+
 #include <functional>
+
+#include "Scene/SceneItem.h"
 
 namespace GUI
 {
@@ -16,7 +17,6 @@ namespace GUI
         Cancel,
         Clean
     };
-   
 
     enum class ButtonState 
     {
@@ -26,12 +26,17 @@ namespace GUI
         Released
     };
 
-
-    class Button : public sf::Drawable
+    class Button : public SceneItem
     {
         public:
             Button() {};
             Button(const std::wstring& s, sf::Font& font, const sf::Vector2f& position, ButtonStyle style, const sf::Vector2f& size, unsigned int font_size);
+
+            virtual void Draw(sf::RenderTarget& target, sf::RenderStates states) const override;
+
+            virtual void HandleInput(sf::Event e, sf::RenderWindow& window) override;
+
+            virtual void Update(sf::RenderWindow& window) override;
 
             void SetColorTextNormal(sf::Color text) { m_textNormal = text; };
             void SetColorTextHover(sf::Color text) { m_textHover = text; };
@@ -54,18 +59,12 @@ namespace GUI
             ButtonState getState() { return m_btnstate; };
             sf::Text GetText() const { return m_text; }
 
-            void HandleInput(sf::Event& e, sf::RenderWindow& window);
-
             template <typename T>
             void BindOnClick(T* object, void (T::* method)()) 
             {
                 m_OnClickListener = [object, method]() { (object->*method)(); };
             }
-
-        private:
-
-           virtual void draw(sf::RenderTarget & target, sf::RenderStates states) const;
-
+           
         private:
 
             sf::Color m_bgNormal;

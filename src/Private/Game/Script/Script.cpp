@@ -1,12 +1,11 @@
-#include "Script.h"
+#include "Game/Script/Script.h"
 #include <SFML/Graphics.hpp>
+
 #include <iostream>
 #include <fstream>
 #include <sstream>
 #include <codecvt>
 #include <locale.h>
-
-
 
 bool Script::open(std::string filename) {
 	m_file.open(filename);

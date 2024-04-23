@@ -1,19 +1,14 @@
 #include "Engine.h"
-#include "GameController.h"
-#include "SceneController.h"
-#include "Script.h"
-#include "Config.h"
+#include "Game/GameStates.h"
+#include "Scene/SceneController.h"
+#include "Game/Script/Script.h"
+#include "Game/Config/Config.h"
 #include <cassert>
-
-Engine::Engine()
-{
-	Root = "D:/prog/cpp/GameProject/game"; // default game root
-}
 
 int Engine::Start()
 {
 	Config config;
-	ConfigOptions options = config.Parse(Root + "/config.vn");
+	ConfigOptions options = config.Parse(Root + "/config.txt");
 
 	Script script;
 	assert(script.open(Root + options.code_file) && "couldn't open script");
@@ -27,25 +22,7 @@ int Engine::Start()
 	SceneController scene(Root, options, window);
 
 	game.SetSceneController(&scene);
-	scene.SetGameController(&game);
-	scene.StartScene();
-
-	sf::Clock timer;
-
-	while (window.isOpen()) {
-
-		sf::Event event;
-		while(window.pollEvent(event)) {
-			if (event.type == sf::Event::Closed) {
-				window.close();
-			}
-			scene.HandleInput(event);
-		}
-		float time = timer.getElapsedTime().asMicroseconds();
-		scene.Tick(time);
-
-		timer.restart();
-	}
+	game.StartGame();
 
 	return 0;
 

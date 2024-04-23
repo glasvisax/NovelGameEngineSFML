@@ -2,28 +2,34 @@
 
 #include <SFML/Graphics.hpp>
 #include <Thor/Animations.hpp>
+#include "SceneItem.h"
 
-class SceneSprite : public sf::Drawable
+class SceneSprite : public SceneItem
 {
 public:
+
 	SceneSprite(const SceneSprite& other);
 
-	SceneSprite(const std::string& name, const sf::Texture& texture);
+	SceneSprite(const sf::Texture& texture);
 
-	void update();
-	void draw(sf::RenderTarget& window, sf::RenderStates states) const override;
+	//TODO: implement handling
+	virtual void HandleInput(sf::Event e, sf::RenderWindow& window) override;
+
+	virtual void Update(sf::RenderWindow& window) override;
+	virtual void Draw(sf::RenderTarget& window, sf::RenderStates states) const override;
 
 public:
 	void PlayFadeOut(float fade_time = 1.0f);
 	void PlayFadeIn(float fade_time = 1.0f);
 	void PlayMoveAnimation(const sf::Vector2f& targetPosition, float duration);
 
-	std::string GetName() const { return Name; }
+	sf::Sprite& GetSFMLSprite() { return Sprite; }
+	sf::Texture& GetSFMLTexture() { return Texture; }
 
 	void Reset();
+	void SetPosition(sf::Vector2f pos);
 
 private:
-	std::string Name;
 	sf::Texture Texture;
 	sf::Sprite Sprite;
 
@@ -40,6 +46,7 @@ private:
 	sf::Vector2f moveAnimationTarget;
 	float moveAnimationDuration = 1.0f;
 	sf::Clock moveAnimationClock;
+	sf::Vector2f FormerPos;
 
 public:
 	std::function<void()> OnFadeOutEnd;

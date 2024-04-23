@@ -1,4 +1,4 @@
-#include "ConfigParser.h"
+#include "Game/Config/ConfigParser.h"
 
 #include <locale>
 #include <fstream>

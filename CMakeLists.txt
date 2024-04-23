@@ -18,9 +18,9 @@ set(THOR_ROOT "D:/Thor/install")
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "D:/Thor/install/cmake/Modules")
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/exec)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
-add_executable(Main ${sources} ${headers})
+add_executable(Main src/main.cpp ${sources} ${headers})
 
 find_package(SFML 2.5 COMPONENTS system window graphics network audio REQUIRED)
 

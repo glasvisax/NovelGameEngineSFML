@@ -5,95 +5,50 @@
 #include <string>
 #include <filesystem>
 
-// êîñòûëü :)
-std::vector<SceneSprite*> to_unshow;
 
 SceneController::SceneController(const std::string& root, const ConfigOptions& opts, sf::RenderWindow& window)
 	: Root(root)
 	, Options(opts)
 	, Window(window)
 {
-	assert(TextFont.loadFromFile(Root + "/fonts/script.ttf") && "couldn't load font");
+	//TODO : get from config
+	assert(TextFont.loadFromFile(Root + "/game/fonts/script.ttf") && "couldn't load font");
+
+	//TODO : get num of elements and reserve in advance
+	Backgrounds.reserve(5);
+	Menus.reserve(5);
+	Sprites.reserve(5);
 
 	sf::Texture default_tt;
 	default_tt.create(Options.width, Options.height);
-	SetTextureColor(sf::Color::White, default_tt);
-	Backgrounds.emplace_back("default", default_tt);
-
-	AddBackground("2", "2.png");
-
-	Background = &Backgrounds.front();
-
-	MainMenu.SetBoxPosition(sf::Vector2f(Options.width / 2, Options.height / 2));
-	MainMenu.SetFont(TextFont); // ØÐÈÔÒ ÓÊÀÇÛÂÀÒÜ ÎÁßÇÀÒÅËÜÍÎ!!!!!!!!!!!!!
-	MainMenu.AddButton(L"Play");
-	MainMenu.AddButton(L"Options");
-	MainMenu.AddButton(L"Exit");
-
-	DialogBox.SetBackgroundShape(sf::Vector2f(Options.width - 100.0f, Options.height / 4), sf::Vector2f(50, Options.height - Options.height / 4), 2.0f, sf::Color::Black, 5.f, sf::Color(32.f, 115.f, 49.f));
-	DialogBox.SetFont(TextFont); 
-	DialogBox.SetCharacterSize(24.0f);
-	DialogBox.SetTextColor(sf::Color(32.f, 115.f, 49.f));
-
-	AddSprite("milk_chan", "milk_chan.png", {50, 45});
-	AddSprite("dornan", "dornan.png", { 50, 49 });
-
-	AddAudioChannel("channel_0", "1.ogg");
-	AddAudioChannel("channel_1", "2.mp3");
+	SetTextureColor(default_tt, sf::Color::White);
+	Backgrounds.emplace_back(default_tt);
+	Backgrounds.front().ItemName = "default";
+	Background.second = &Backgrounds.front();
 }
 
 void SceneController::StartScene()
 {
-	bStart = true;
-	auto play_btn = MainMenu.GetButtonByText("Play");
-	if (play_btn) { play_btn->BindOnClick(this, &SceneController::ToNextFrame); }
-
-	auto exit_btn = MainMenu.GetButtonByText("Exit");
-	if (exit_btn) { exit_btn->BindOnClick(this, &SceneController::Exit); }
-
-	DialogBox.BindOnChoose(this, &SceneController::OnChoiceSelected);
-	DialogBox.BindOnRenderEnd(this, &SceneController::WaitNextInput);
+	DialogBox.OnChoiceSelected = ToNextFrameEvent;
+	DialogBox.OnTextRendered = [this]() mutable -> void { bWaitNextInput = true; };
+	GlobalHandler();
 }
 
-void SceneController::HandleInput(sf::Event e)
+void SceneController::GlobalHandler()
 {
-	if (e.mouseButton.button == sf::Mouse::Left && e.type == sf::Event::MouseButtonReleased && bWaitNextInput){
-		ToNextFrame();
-		bWaitNextInput = false;
-		return;
-	}
+	while (Window.isOpen()) {
 
-	if (!bPlay) {
-		MainMenu.HandleInput(e, Window);
-	}
-	else {
-		DialogBox.HandleInput(e, Window);
-	}
-}
-
-void SceneController::StartGame()
-{
-	bPlay = true;
-}
-
-void SceneController::Tick(float DeltaTime)
-{
-	if (FormerBackground) FormerBackground->update();
-	Background->update();
-	if (bPlay) {
-		for (auto& s : ShownSprites) {
-			s->update();
+		sf::Event event;
+		while (Window.pollEvent(event)) {
+			if (event.type == sf::Event::Closed) {
+				Window.close();
+			}
+			HandleInput(event);
 		}
-		DialogBox.update(Window);
-	}
 
-	if (!to_unshow.empty()) {
-		for (auto& us : to_unshow) {
-			HideSprite(us->GetName(), false);
-		}
-		to_unshow.clear();
+		Update();
+		Render();
 	}
-	Render();
 }
 
 void SceneController::Exit()
@@ -101,84 +56,187 @@ void SceneController::Exit()
 	Window.close();
 }
 
-void SceneController::ToNextFrame()
+void SceneController::HandleInput(sf::Event e)
 {
-	Game->Next();
+	for (auto& m : Menus) {
+		if (m.bShowing) {
+			m.HandleInput(e, Window);
+			return;
+		}
+	}
+
+	for (auto& i : Sprites) {
+		if (i.bShowing) {
+			i.HandleInput(e, Window);
+		}
+	}
+
+	if (DialogBox.bShowing) {
+		DialogBox.HandleInput(e, Window);
+	}
+
+	if (e.type == sf::Event::KeyPressed && e.key.code == sf::Keyboard::Escape) {
+		if (EscapePressEvent) EscapePressEvent();
+	}
+
+	if (e.mouseButton.button == sf::Mouse::Left && e.type == sf::Event::MouseButtonReleased && bWaitNextInput) {
+		assert(ToNextFrameEvent && "ToNextFrameEvent must be binded");
+		ToNextFrameEvent();
+		bWaitNextInput = false;
+
+	}
 }
 
-void SceneController::WaitNextInput()
+void SceneController::Update()
 {
-	bWaitNextInput = true;
-}
+	if (Background.first) Background.first->Update(Window);
+	Background.second->Update(Window);
 
-void SceneController::OnChoiceSelected(unsigned int choice)
-{
-	Game->SetCurrentChoice(choice);
-	ToNextFrame();
+	for (auto& i : Menus) {
+		if (i.bShowing) {
+			i.Update(Window);
+			return;
+		}
+	}
+
+	for (auto& i : Sprites) {
+		if (i.bShowing) {
+			i.Update(Window); 
+		}
+	}
+
+	if (DialogBox.bShowing) { 
+		DialogBox.Update(Window); 
+	}
 }
 
 void SceneController::Render()
 {
-	Window.clear();
-	if(FormerBackground) Window.draw(*FormerBackground);
-	Window.draw(*Background);
+	Window.clear(); 
 
-	if (!bPlay) {
-		Window.draw(MainMenu);
-	}
-	else {
-		for (auto& s : ShownSprites) {
-			Window.draw(*s);
+	if (Background.first) Window.draw(*Background.first);
+	Window.draw(*Background.second);
+
+	for (auto& i : Sprites) {
+		if (i.bShowing) {
+			Window.draw(i);
 		}
+	}
+
+	if (DialogBox.bShowing) {
 		Window.draw(DialogBox);
 	}
+
+	for (auto& i : Menus) {
+		if (i.bShowing) {
+			Window.draw(i);
+		}
+	}
+
 	Window.display();
 }
 
-sf::Texture SceneController::GetImageTexture(const std::string& file_name)
+void SceneController::AddBackground(const std::string& bg_name, const std::string& file_name)
 {
-	sf::Texture texture;
-	std::string path = GetFilePath(file_name);
-	assert(texture.loadFromFile(path) && "Not Found Image");
-	return texture;
+	Backgrounds.emplace_back(GetImageTexture(file_name));
+	Backgrounds.back().ItemName = bg_name;
+
+	auto& sprite = Backgrounds.back().GetSFMLSprite();
+	sprite.setPosition(sf::Vector2f(0.0f, 0.0f));
 }
 
-std::string SceneController::GetFilePath(const std::string& file_name)
+void SceneController::ShowBackground(const std::string& bg_name, float fade_time)
 {
-	for (auto& folder : Options.content_folders)
-	{
-		std::string path = Root + folder + '/' + file_name;
+	if (Backgrounds.empty()) return;
+	for (auto& bg : Backgrounds) {
+		if (bg.ItemName == bg_name) {
 
-		if (std::filesystem::exists(path))
-		{
-			return path;
+			if (fade_time > 0) {
+				Background.first = Background.second;
+				Background.second = &bg;
+
+				Background.second->PlayFadeIn();
+				Background.second->OnFadeInEnd = [this]() mutable -> void { Background.first = nullptr; };
+			} else {
+				Background.first = nullptr;
+				Background.second = &bg;
+			}
 		}
 	}
-
-	assert(false && "File not found");
-	return "";
 }
 
-void SceneController::AddSprite(const std::string& sprite_name, const std::string& file_name, const sf::Vector2u& position, bool user_scale, float scale)
-{ 
-	Sprites.emplace_back(sprite_name, GetImageTexture(file_name));
+void SceneController::SetBackgroundColor(const sf::Color& color, float fade_time)
+{
+	SceneSprite& bg = Backgrounds.front();
+	SetTextureColor(bg.GetSFMLTexture(), color);
+
+	if (fade_time > 0) {
+		Background.first = Background.second;
+		Background.second = &bg;
+		Background.second->OnFadeInEnd = [this]() mutable -> void { Background.first = nullptr; };
+		Background.second->PlayFadeIn();
+	}
+	else {
+		Background.second = &bg;
+	}
+}
+
+GUI::MenuBox& SceneController::AddMenu(const sf::Vector2f& pos, const std::vector<std::wstring>& buttons, std::string name)
+{
+	Menus.emplace_back();
+	auto& curr_menu = Menus.back();
+
+	auto tpos = sf::Vector2f(
+		static_cast<float>(Options.width * pos.x) / 100.f,
+		static_cast<float>(Options.height) - (static_cast<float>(Options.height * pos.y) / 100.f));
+	curr_menu.SetBoxPosition(tpos);
+	curr_menu.SetFont(TextFont); 
+	curr_menu.ItemName = name;
+	for (auto& bt : buttons) {
+		curr_menu.AddButton(bt);
+	}
+	return curr_menu;
+}
+
+void SceneController::ShowMenu(const std::string& name)
+{
+	for (auto& m : Menus) {
+		if (m.ItemName == name) {
+			m.bShowing = true;
+		}
+		else {
+			m.bShowing = false;
+		}
+	}
+}
+
+void SceneController::HideMenu(const std::string& name)
+{
+	for (auto& m : Menus) {
+		if (m.ItemName == name) {
+			m.bShowing = false;
+			break;
+		}
+	}
+}
+
+void SceneController::AddSprite(const std::string& sprite_name, const std::string& file_name, const sf::Vector2f& position, float scale)
+{
+	Sprites.emplace_back(GetImageTexture(file_name));
+	Sprites.back().ItemName = sprite_name;
 	float curr_scale = scale;
-	sf::Vector2u curr_pos = position;
-	auto& sprite = Sprites.back().Sprite;
+	auto& sprite = Sprites.back().GetSFMLSprite();
 
 	auto& bounds = sprite.getLocalBounds();
 	sprite.setOrigin(bounds.width / 2, bounds.height / 2);
 
-	curr_pos.x = (curr_pos.x > 100) ? 100 : curr_pos.x;
-	curr_pos.y = (curr_pos.y > 100) ? 100 : curr_pos.y;
-
 	auto tpos = sf::Vector2f(
-		static_cast<float>(Options.width * curr_pos.x) / 100.f,
-		static_cast<float>(Options.height) - (static_cast<float>(Options.height * curr_pos.y) / 100.f));
+		static_cast<float>(Options.width * position.x) / 100.f,
+		static_cast<float>(Options.height) - (static_cast<float>(Options.height * position.y) / 100.f));
 
 	sprite.setPosition(tpos);
 
-	if (!user_scale) {
+	if (curr_scale != 1.0f) {
 		auto& size = sprite.getTexture()->getSize();
 		auto win_max_wd = Options.width - (Options.width / 3);
 		auto win_max_ht = Options.height - (Options.height / 3);
@@ -195,82 +253,85 @@ void SceneController::AddSprite(const std::string& sprite_name, const std::strin
 
 }
 
-void SceneController::AddBackground(const std::string& bg_name, const std::string& file_name)
-{
-	Backgrounds.emplace_back(bg_name, GetImageTexture(file_name));
-	auto& sprite = Backgrounds.back().Sprite;
-	sprite.setPosition(sf::Vector2f(0.0f, 0.0f));
-}
-
-void SceneController::ShowBackground(const std::string& bg_name, bool fade_anim)
-{
-	if (Backgrounds.empty()) return;
-	for (auto& bg : Backgrounds) {
-		if (bg.Name == bg_name) {
-			if (fade_anim) {
-				FormerBackground = Background;
-				Background = &bg;
-				Background->OnFadeInEnd = [this]() mutable -> void { FormerBackground = nullptr; };
-				Background->PlayFadeIn();
-			} else {
-				Background = &bg;
-			}
-		}
-	}
-}
-
-void SceneController::SetBackgroundColor(const sf::Color& color, bool fade_anim)
-{
-	static sf::Color prev_color = color;
-	auto& bg = Backgrounds.front();
-	if (prev_color != color) { 
-		SetTextureColor(color, bg.Texture); 
-		prev_color = color;
-	}
-
-	if (fade_anim) {
-		FormerBackground = Background;
-		Background = &bg;
-		Background->OnFadeInEnd = [this]() mutable -> void { FormerBackground = nullptr; };
-		Background->PlayFadeIn();
-	}
-	else {
-		Background = &bg;
-	}
-}
-
-void SceneController::ShowSprite(const std::string& sprite_name, bool fade_anim)
+void SceneController::ShowSprite(const std::string& sprite_name, float fade_time)
 {
 	if (Sprites.empty()) return;
 	for (auto& sp : Sprites) {
-		if (sp.Name == sprite_name) {
-
-			ShownSprites.push_back(&sp);
-			if (fade_anim) { 
-				sp.PlayFadeIn(); 
-				sp.PlayMoveAnimation(sf::Vector2f(100.f, 200.f), 30.f);
+		if (sp.ItemName == sprite_name) {
+			sp.bShowing = true;
+			if (fade_time > 0.0f) {
+				sp.PlayFadeIn(fade_time);
 			}
-
 			break;
 		}
 	}
 }
 
-void SceneController::HideSprite(const std::string& sprite_name, bool fade_anim)
+void SceneController::HideSprite(const std::string& sprite_name, float fade_time)
 {
-	if (ShownSprites.empty()) return;
+	if (Sprites.empty()) return;
 
-	auto it = std::find_if(ShownSprites.begin(), ShownSprites.end(), [&](const auto& sprite) { return sprite->Name == sprite_name; });
-	if (it == ShownSprites.end()) return;
-	if (fade_anim) {
-		(*it)->PlayFadeOut();
-		(*it)->OnFadeOutEnd = [this, it]() mutable { to_unshow.push_back(*it); };
-	} else {
-		ShownSprites.erase(it);
+	for (auto& sp : Sprites) {
+		if (sp.ItemName == sprite_name) {
+			sp.bShowing = false;
+			if (fade_time > 0.0f) {
+				sp.PlayFadeOut();
+				sp.OnFadeOutEnd = [&sp]() mutable -> void { sp.bShowing = false; };
+			}
+			break;
+		}
+	}
+
+}
+
+void SceneController::SetSpritePosition(const std::string& sprite_name, sf::Vector2f pos)
+{
+	if (Sprites.empty()) return;
+
+	for (auto& sp : Sprites) {
+		if (sp.ItemName == sprite_name) {
+			if (sp.bShowing) {
+
+				auto tpos = sf::Vector2f(
+					static_cast<float>(Options.width * pos.x) / 100.f,
+					static_cast<float>(Options.height) - (static_cast<float>(Options.height * pos.y) / 100.f));
+
+				sp.SetPosition(tpos);
+			}
+			break;
+		}
 	}
 }
 
-void SceneController::SetTextureColor(const sf::Color& color, sf::Texture& texture)
+void SceneController::PlaySpriteMoveAnim(const std::string& sprite_name, sf::Vector2f pos, float time)
+{
+	if (Sprites.empty()) return;
+
+	for (auto& sp : Sprites) {
+		if (sp.ItemName == sprite_name) {
+			if (sp.bShowing) {
+
+				auto tpos = sf::Vector2f(
+					static_cast<float>(Options.width * pos.x) / 100.f,
+					static_cast<float>(Options.height) - (static_cast<float>(Options.height * pos.y) / 100.f));
+
+				sp.PlayMoveAnimation(tpos, time);
+			}
+			break;
+		}
+	}
+}
+
+void SceneController::HideAllSprites()
+{
+	if (Sprites.empty()) return;
+
+	for (auto& sp : Sprites) {
+		sp.bShowing = false;
+	}
+}
+
+void SceneController::SetTextureColor(sf::Texture& texture, const sf::Color& color)
 {
 	sf::Vector2u backg_size = texture.getSize();
 	unsigned int pixel_amnt = (backg_size.x * backg_size.y);
@@ -287,7 +348,21 @@ void SceneController::SetTextureColor(const sf::Color& color, sf::Texture& textu
 	delete[] pixels;
 }
 
-void SceneController::SetText(const std::wstring& text, bool print_anim, const std::wstring& name)
+GUI::DialogBox& SceneController::SetupDialogBox(const sf::Vector2f& size_percent, const sf::Vector2f& position_percent, float corner_radius, const sf::Color& background_color, float outline_thickness, const sf::Color& outline_color)
+{
+	sf::Vector2f size(Options.width * size_percent.x / 100.f, Options.height * size_percent.y / 100.f);
+	
+	auto tpos = sf::Vector2f(
+		static_cast<float>((Options.width * position_percent.x) / 100.f) - (size.x/2),
+		static_cast<float>((Options.height) - (static_cast<float>(Options.height * position_percent.y) / 100.f) - (size.y / 2)));
+
+	DialogBox.SetBackgroundShape(size, tpos, corner_radius, background_color, outline_thickness, outline_color);
+	DialogBox.SetFont(TextFont);
+
+	return DialogBox;
+}
+
+void SceneController::SetText(const std::wstring& text, const std::wstring& name, bool print_anim)
 {
 	DialogBox.SetText(text, name);
 	if (print_anim) DialogBox.PlayPrintAnimation();
@@ -299,30 +374,44 @@ void SceneController::SetChoices(const std::vector<std::wstring>& options)
 	DialogBox.SetChoices(options);
 }
 
-void SceneController::SetTextFont(const std::string& file_name)
+unsigned int SceneController::GetCurrentResponse()
 {
-	sf::Font font;
-	if (!font.loadFromFile(file_name)) return;
-
-	DialogBox.SetFont(font);
+	return DialogBox.GetSelectedResponse();
 }
 
-void SceneController::SetTextCharacterSize(float text_size, float name_size)
+void SceneController::ShowDialogBox()
 {
-	DialogBox.SetCharacterSize(text_size, name_size);
+	DialogBox.bShowing = true;
 }
 
-void SceneController::SetTextColor(const sf::Color& color)
+void SceneController::HideDialogBox()
 {
-	DialogBox.SetTextColor(color);
+	DialogBox.bShowing = false;
 }
 
-void SceneController::SetTextHoverColor(const sf::Color& color)
+
+std::string SceneController::GetFilePath(const std::string& file_name)
 {
-	DialogBox.SetTextHoverColor(color);
+	for (auto& folder : Options.content_folders){
+		std::string path = Root + folder + '/' + file_name;
+		if (std::filesystem::exists(path)){
+			return path;
+		}
+	}
+	assert(false && "File not found");
+	return "";
 }
 
-void SceneController::AddAudioChannel(const std::string& name, const std::string& file_name) {
+sf::Texture SceneController::GetImageTexture(const std::string& file_name)
+{
+	sf::Texture texture;
+	std::string path = GetFilePath(file_name);
+	assert(texture.loadFromFile(path) && "Not Found Image");
+	return texture;
+}
+
+void SceneController::AddChannel(const std::string& name, const std::string& file_name) 
+{
 	if (AudioChannels.find(name) == AudioChannels.end()) {
 		std::shared_ptr<sf::Music> music = std::make_shared<sf::Music>();
 		if (music->openFromFile(GetFilePath(file_name))) {
@@ -331,26 +420,38 @@ void SceneController::AddAudioChannel(const std::string& name, const std::string
 	}
 }
 
-void SceneController::PlayAudioChannel(const std::string& name, bool loop) {
+void SceneController::PlayChannel(const std::string& name, bool loop) 
+{
+	if (AudioChannels.empty()) return;
+
 	if (AudioChannels.find(name) != AudioChannels.end()) {
 		AudioChannels[name]->setLoop(loop);
 		AudioChannels[name]->play();
 	}
 }
 
-void SceneController::StopAudioChannel(const std::string& name) {
+void SceneController::StopChannel(const std::string& name)
+{
+	if (AudioChannels.empty()) return;
+
 	if (AudioChannels.find(name) != AudioChannels.end()) {
 		AudioChannels[name]->stop();
 	}
 }
 
-void SceneController::SetAudioChannelVolume(const std::string& name, float volume) {
+void SceneController::SetChannelVolume(const std::string& name, float volume) 
+{
+	if (AudioChannels.empty()) return;
+
 	if (AudioChannels.find(name) != AudioChannels.end()) {
 		AudioChannels[name]->setVolume(volume);
 	}
 }
 
-void SceneController::ReloadAudioChannel(const std::string& name, const std::string& file_name) {
+void SceneController::ReloadChannel(const std::string& name, const std::string& file_name)
+{
+	if (AudioChannels.empty()) return;
+
 	if (AudioChannels.find(name) != AudioChannels.end()) {
 		AudioChannels[name]->stop();
 		if (AudioChannels[name]->openFromFile(GetFilePath(file_name))) {
@@ -358,3 +459,38 @@ void SceneController::ReloadAudioChannel(const std::string& name, const std::str
 		}
 	}
 }
+
+void SceneController::PausePlayingChannels()
+{
+	if (AudioChannels.empty()) return;
+
+	for (auto& i : AudioChannels)
+	{
+		if (i.second->getStatus() == sf::SoundSource::Playing) {
+			i.second->pause();
+		}
+	}
+}
+
+void SceneController::UnPausePlayingChannels()
+{
+	if (AudioChannels.empty()) return;
+
+	for (auto& i : AudioChannels)
+	{
+		if (i.second->getStatus() == sf::SoundSource::Paused) {
+			i.second->play();
+		}
+	}
+}
+void SceneController::StopAllChannels()
+{
+	if (AudioChannels.empty()) return;
+
+	for (auto& i : AudioChannels)
+	{
+		i.second->stop();
+		
+	}
+}
+

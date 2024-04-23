@@ -21,23 +21,7 @@ namespace GUI {
         m_button.setOrigin(m_size.x / 2, m_size.y / 2);
     }
 
-    void Button::SetPosition(const sf::Vector2f& position)
-    {
-        m_position = position;
-        m_button.setPosition(m_position);
-        m_text.setPosition(sf::Vector2f(m_position.x - (m_text.getGlobalBounds().width / 2), m_position.y - (m_text.getGlobalBounds().height)));
-
-    }
-    void Button::SetSize(unsigned int size)
-    {
-        m_fontSize = size;
-        m_text.setCharacterSize(m_fontSize);
-        m_text.setOrigin(m_text.getGlobalBounds().width / 2, m_text.getGlobalBounds().height / 2);
-        m_size = sf::Vector2f(m_text.getGlobalBounds().width * 1.5f, (m_text.getGlobalBounds().height + m_text.getGlobalBounds().height) * 1.5f);
-        m_button = thor::Shapes::roundedRect(m_size, m_borderRadius, m_bgNormal, m_borderThickness, m_border);
-    }
-
-    void Button::HandleInput(sf::Event& e, sf::RenderWindow& window)
+    void Button::HandleInput(sf::Event e, sf::RenderWindow& window)
     {
         sf::Vector2i mouse_pos = sf::Mouse::getPosition(window);
         sf::FloatRect bounds = m_button.getGlobalBounds();
@@ -71,7 +55,12 @@ namespace GUI {
         m_text.setColor(m_textNormal);
     }
 
-    void Button::draw(sf::RenderTarget& target, sf::RenderStates states) const
+    void Button::Update(sf::RenderWindow& window)
+    {
+        // update...
+    }
+
+    void Button::Draw(sf::RenderTarget& target, sf::RenderStates states) const
     {
         target.draw(m_button, states);
         target.draw(m_text, states);
@@ -80,6 +69,23 @@ namespace GUI {
             bIsClicked = false;
         }
     }
+
+    void Button::SetPosition(const sf::Vector2f& position)
+    {
+        m_position = position;
+        m_button.setPosition(m_position);
+        m_text.setPosition(sf::Vector2f(m_position.x - (m_text.getGlobalBounds().width / 2), m_position.y - (m_text.getGlobalBounds().height)));
+
+    }
+    void Button::SetSize(unsigned int size)
+    {
+        m_fontSize = size;
+        m_text.setCharacterSize(m_fontSize);
+        m_text.setOrigin(m_text.getGlobalBounds().width / 2, m_text.getGlobalBounds().height / 2);
+        m_size = sf::Vector2f(m_text.getGlobalBounds().width * 1.5f, (m_text.getGlobalBounds().height + m_text.getGlobalBounds().height) * 1.5f);
+        m_button = thor::Shapes::roundedRect(m_size, m_borderRadius, m_bgNormal, m_borderThickness, m_border);
+    }
+
 
     void Button::SetStyle(ButtonStyle style)
     {
@@ -102,10 +108,10 @@ namespace GUI {
             m_textNormal = sf::Color(255, 255, 255);
             m_textHover = sf::Color(255, 255, 255);
             m_textClicked = sf::Color(255, 255, 255);
-            m_bgNormal = sf::Color(0, 255, 0, 100);
-            m_bgHover = sf::Color(0, 200, 0, 100);
+            m_bgNormal = sf::Color(0, 255, 0, 255);
+            m_bgHover = sf::Color(0, 200, 0, 255);
             m_bgClicked = sf::Color(0, 150, 0);
-            m_border = sf::Color(0, 0, 0, 100);
+            m_border = sf::Color(0, 0, 0, 255);
         }
         break;
 

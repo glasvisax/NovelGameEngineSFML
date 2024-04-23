@@ -1,9 +1,10 @@
 #pragma once
 
 #include <SFML/Graphics.hpp>
-#include "SceneController.h"
 
-#include "Script.h"
+#include "Scene/SceneController.h"
+#include "Game/Script/Script.h"
+
 #include <vector>
 
 class SceneController;
@@ -17,12 +18,13 @@ public:
 	void SetSceneController(SceneController* scene);
 
 public:
+	void StartGame();
+	void StartNovel();
+	void GoToMainMenu();
+	void ContinueNovel();
 
-	void SetCurrentChoice(unsigned int choise);
-	void Next();
 
 private:
-	
 	void NextStatement();
 	const ConfigOptions& Options;
 	const std::string& Root;
@@ -31,6 +33,5 @@ private:
 
 private:
 	unsigned int frame = 0;
-	unsigned int ChosenResponse = -1;
 };
 
