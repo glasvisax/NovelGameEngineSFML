@@ -8,7 +8,7 @@ project(GameProject LANGUAGES CXX)
 
 FILE(GLOB_RECURSE headers src/Public/*.h src/Public/Scene/*.h src/Public/Scene/GUI/*.h src/Public/Game/*.h src/Public/Game/Script/*.h src/Public/Game/Config/*.h)
 
-FILE(GLOB_RECURSE sources src/Private/*.cpp src/Private/Scene/*.cpp src/Private/Scene/GUI/*.cpp src/Private/Game/*.cpp src/Private/Game/Script/*.cpp src/Private/Game/Config/*.cpp)
+FILE(GLOB_RECURSE sources src/*.cpp src/Private/*.cpp src/Private/Scene/*.cpp src/Private/Scene/GUI/*.cpp src/Private/Game/*.cpp src/Private/Game/Script/*.cpp src/Private/Game/Config/*.cpp)
 
 set(SFML_STATIC_LIBRARIES TRUE)
 
@@ -16,11 +16,11 @@ set(SFML_DIR "D:/SFML/install/lib/cmake/SFML")
 
 set(THOR_ROOT "D:/Thor/install")
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "D:/Thor/install/cmake/Modules")
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${THOR_ROOT}/cmake/Modules)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
-add_executable(Main src/main.cpp ${sources})
+add_executable(Main src/main.cpp ${sources} ${headers})
 
 find_package(SFML 2.5 COMPONENTS system window graphics network audio REQUIRED)
 
@@ -34,4 +34,4 @@ target_include_directories(Main PUBLIC ${THOR_INCLUDE_DIR})
 
 target_include_directories(Main PRIVATE src/Private PUBLIC src/Public)
 
-source_group(TREE D:/prog/cpp/GameProject/src FILES ${sources} ${headers})
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/src FILES ${sources} ${headers})

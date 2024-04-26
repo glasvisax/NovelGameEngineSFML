@@ -1,4 +1,4 @@
-#include <Game/GameStates.h>
+#include "GameStates.h"
 #include <Scene/SceneController.h>
 
 #include <string>

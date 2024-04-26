@@ -1,5 +1,5 @@
 #include "Engine.h"
-#include "Game/GameStates.h"
+#include "GameStates.h"
 #include "Scene/SceneController.h"
 
 void Engine::Start(const std::string& root)
