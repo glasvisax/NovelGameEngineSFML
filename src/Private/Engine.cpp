@@ -1,29 +1,17 @@
 #include "Engine.h"
 #include "Game/GameStates.h"
 #include "Scene/SceneController.h"
-#include "Game/Script/Script.h"
-#include "Game/Config/Config.h"
-#include <cassert>
 
-int Engine::Start()
+void Engine::Start(const std::string& root)
 {
-	Config config;
-	ConfigOptions options = config.Parse(Root + "/config.txt");
-
-	Script script;
-	assert(script.open(Root + options.code_file) && "couldn't open script");
-
-	std::vector<Statement> statements = std::vector<Statement>(); //script.parse();
+	ConfigOptions opts;
+	GameStates::GetConfigOptions(opts);
 
 	sf::RenderWindow window;
-	window.create(sf::VideoMode(options.width, options.height), options.title, sf::Style::Titlebar | sf::Style::Close);
+	window.create(sf::VideoMode(opts.width, opts.height), opts.title, sf::Style::Titlebar | sf::Style::Close);
 	
-	GameController game(Root, options, statements, window);
-	SceneController scene(Root, options, window);
+	SceneController scene(root, opts, window);
+	GameStates game(&scene);
 
-	game.SetSceneController(&scene);
 	game.StartGame();
-
-	return 0;
-
 }

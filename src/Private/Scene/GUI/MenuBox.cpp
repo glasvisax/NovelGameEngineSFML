@@ -15,7 +15,6 @@ namespace GUI
         return Buttons.back();
     }
 
-
     void MenuBox::HandleInput(sf::Event event, sf::RenderWindow& window)
     {
         for (auto& Button : Buttons)

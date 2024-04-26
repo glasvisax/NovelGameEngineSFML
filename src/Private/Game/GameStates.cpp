@@ -1,22 +1,34 @@
 #include <Game/GameStates.h>
 #include <Scene/SceneController.h>
+
 #include <string>
 #include <cassert>
 
-GameController::GameController(const std::string& root, const ConfigOptions& opts, const std::vector<Statement>& statements, sf::RenderWindow& window)
-	: Root(root)
-	, Options(opts)
-	, Statements(statements)
-{
-
-}
-
-void GameController::SetSceneController(SceneController* scene)
+GameStates::GameStates(SceneController* scene)
 {
 	this->Scene = scene;
 }
 
-void GameController::StartGame()
+void GameStates::GetConfigOptions(ConfigOptions& opts)
+{
+	opts.height = 728;
+	opts.width = 1024;
+	opts.title = "Test";
+	opts.main_font = "script.ttf";
+	opts.content_folders = {
+		"/game/audio",
+		"/game/audio/sounds",
+		"/game/audio/music",
+		"/game/fonts",
+		"/game/img",
+		"/game/img/characters" };
+
+	opts.backgrounds_amount = 5;
+	opts.sprites_amount = 5;
+	opts.menus_amount = 5;
+}
+
+void GameStates::StartGame()
 {
 	assert(Scene && "Scene is nullptr");
 
@@ -33,42 +45,29 @@ void GameController::StartGame()
 	Scene->AddChannel("channel_1", "2.mp3");
 
 	auto& mm = Scene->AddMenu(sf::Vector2f(50, 50), { L"Play", L"Options", L"Exit" }, "Main_Menu");
-
-	auto play_mm = mm.GetButtonByText(L"Play");
-	if (play_mm) { play_mm->BindOnClick(this, &GameController::StartNovel); }
-
-	auto exit_mm = mm.GetButtonByText(L"Exit");
-	if (exit_mm) { exit_mm->BindOnClick(Scene, &SceneController::Exit); }
+	if (auto play_mm = mm.GetButtonByText(L"Play")) { play_mm->BindOnClick(this, &GameStates::StartNovel); }
+	if (auto exit_mm = mm.GetButtonByText(L"Exit")) { exit_mm->BindOnClick(Scene, &SceneController::Exit); }
 
 	auto& em = Scene->AddMenu(sf::Vector2f(50, 50), { L"Continue", L"Main Menu", L"Exit" }, "Escape_Menu");
+	if (auto continue_em = em.GetButtonByText(L"Continue")) { continue_em->BindOnClick(this, &GameStates::ContinueNovel); }
+	if (auto exit_em = em.GetButtonByText(L"Exit")) { exit_em->BindOnClick(Scene, &SceneController::Exit); }
+	if (auto main_menu_em = em.GetButtonByText(L"Main Menu")) { main_menu_em->BindOnClick(this, &GameStates::GoToMainMenu); }
 
-	auto continue_em = em.GetButtonByText(L"Continue");
-	if (continue_em) { continue_em->BindOnClick(this, &GameController::ContinueNovel); }
-
-	auto exit_em = em.GetButtonByText(L"Exit");
-	if (exit_em) { exit_em->BindOnClick(Scene, &SceneController::Exit); }
-
-	auto main_menu_em = em.GetButtonByText(L"Main Menu");
-	if (main_menu_em) { main_menu_em->BindOnClick(this, &GameController::GoToMainMenu); }
-
-	Scene->ToNextFrameEvent = [this]() { NextStatement(); };
-	Scene->EscapePressEvent = [this]() {
-		Scene->PausePlayingChannels();
-		Scene->ShowMenu("Escape_Menu");
-		};
+	Scene->ToNextFrameEvent = [this]() -> void { NextStatement(); };
+	Scene->EscapePressEvent = [this]() -> void { GoToEscapeMenu(); };
 
 	Scene->ShowMenu("Main_Menu");
 	Scene->StartScene();
 }
 
-void GameController::StartNovel()
+void GameStates::StartNovel()
 {
 	Scene->HideMenu("Main_Menu");
 	Scene->ShowDialogBox();
 	NextStatement();
 }
 
-void GameController::GoToMainMenu()
+void GameStates::GoToMainMenu()
 {
 	Scene->SetBackgroundColor(sf::Color::White);
 	Scene->StopAllChannels();
@@ -78,7 +77,13 @@ void GameController::GoToMainMenu()
 	Scene->ShowMenu("Main_Menu");
 }
 
-void GameController::ContinueNovel()
+void GameStates::GoToEscapeMenu()
+{
+	Scene->PausePlayingChannels();
+	Scene->ShowMenu("Escape_Menu");
+}
+
+void GameStates::ContinueNovel()
 {
 	Scene->UnPausePlayingChannels();
 	Scene->HideMenu("Escape_Menu");
@@ -86,7 +91,7 @@ void GameController::ContinueNovel()
 	NextStatement();
 }
 
-void GameController::NextStatement()
+void GameStates::NextStatement()
 {
 	switch (frame) 
 	{
@@ -106,7 +111,7 @@ void GameController::NextStatement()
 		{
 			Scene->ShowBackground("2", 2.0f);
 
-			Scene->SetText(L"машала брат", L"дорнан", true);
+			Scene->SetText(L"машала братишка ееее", L"дорнан", true);
 			
 			Scene->ShowSprite("dornan");
 
@@ -183,21 +188,3 @@ void GameController::NextStatement()
 	return;
 }
 
-
-/*
-sf::Color parseColor(std::string str) {
-	std::istringstream ss(str);
-
-	int r = 0;
-	int g = 0;
-	int b = 0;
-	int a = 0;
-	ss >> r;
-	ss >> g;
-	ss >> b;
-	ss >> a;
-
-	sf::Color newColor(r, g, b, a);
-	return newColor;
-}
-*/

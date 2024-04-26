@@ -5,19 +5,17 @@
 #include <string>
 #include <filesystem>
 
-
 SceneController::SceneController(const std::string& root, const ConfigOptions& opts, sf::RenderWindow& window)
 	: Root(root)
 	, Options(opts)
 	, Window(window)
 {
-	//TODO : get from config
-	assert(TextFont.loadFromFile(Root + "/game/fonts/script.ttf") && "couldn't load font");
+	std::string font_file = GetFilePath(opts.main_font);
+	assert(TextFont.loadFromFile(font_file) && "couldn't load font");
 
-	//TODO : get num of elements and reserve in advance
-	Backgrounds.reserve(5);
-	Menus.reserve(5);
-	Sprites.reserve(5);
+	Backgrounds.reserve(opts.backgrounds_amount);
+	Menus.reserve(opts.menus_amount);
+	Sprites.reserve(opts.sprites_amount);
 
 	sf::Texture default_tt;
 	default_tt.create(Options.width, Options.height);
@@ -398,7 +396,7 @@ std::string SceneController::GetFilePath(const std::string& file_name)
 			return path;
 		}
 	}
-	assert(false && "File not found");
+	assert(false && strcat("File not found: ", file_name.c_str()));
 	return "";
 }
 

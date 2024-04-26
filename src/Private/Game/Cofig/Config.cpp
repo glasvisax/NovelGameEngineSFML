@@ -6,7 +6,7 @@
 
 const int DEFAULT_WINDOW_WIDTH = 640;
 const int DEFAULT_WINDOW_HEIGHT = 480;
-const std::string TITLE = "GameController";
+const std::string TITLE = "GameStates";
 
 ConfigOptions Config::Parse(std::string filename) 
 {

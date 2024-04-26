@@ -5,11 +5,24 @@
 #include <list>
 #include <functional>
 
-#include "Game/Config/Config.h"
 #include "GUI.h"
 #include "SceneSprite.h"
 
+struct ConfigOptions
+{
+	unsigned int width;
+	unsigned int height;
+	std::string title;
+	std::string main_font;
+	std::vector<std::string> content_folders;
+
+	uint8_t backgrounds_amount;
+	uint8_t sprites_amount;
+	uint8_t menus_amount;
+};
+
 using namespace GUI;
+
 class SceneController
 {
 public:
@@ -62,7 +75,6 @@ private:
 
 private:
 	sf::Font TextFont;
-
 	std::vector<SceneSprite> Backgrounds;
 	std::pair<SceneSprite*, SceneSprite*> Background;
 	std::vector<MenuBox> Menus;
