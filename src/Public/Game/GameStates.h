@@ -3,7 +3,7 @@
 class SceneController;
 struct ConfigOptions;
 
-class GameStates 
+class GameStates
 {
 public:
 	GameStates(SceneController* scene);

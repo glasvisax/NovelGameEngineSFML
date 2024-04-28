@@ -54,7 +54,7 @@ namespace GUI
             void SetStyle(ButtonStyle style);
             void SetOrigin(const sf::Vector2f& origin) { m_button.setOrigin(origin); }
 
-            sf::Vector2f getPosition() { return m_position; };
+            sf::Vector2f getPosition() const { return m_position; };
 
             ButtonState getState() { return m_btnstate; };
             sf::Text GetText() const { return m_text; }

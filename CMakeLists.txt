@@ -1,37 +1,56 @@
 cmake_minimum_required(VERSION 3.16)
-
 set(CMAKE_CXX_STANDARD 17)
-
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
 project(GameProject LANGUAGES CXX)
 
-FILE(GLOB_RECURSE headers src/Public/*.h src/Public/Scene/*.h src/Public/Scene/GUI/*.h src/Public/Game/*.h src/Public/Game/Script/*.h src/Public/Game/Config/*.h)
+set (CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
-FILE(GLOB_RECURSE sources src/*.cpp src/Private/*.cpp src/Private/Scene/*.cpp src/Private/Scene/GUI/*.cpp src/Private/Game/*.cpp src/Private/Game/Script/*.cpp src/Private/Game/Config/*.cpp)
+# -----------DEBUG - ON RELEASE CHANGE----------------
 
-set(SFML_STATIC_LIBRARIES TRUE)
+set(CMAKE_INSTALL_PREFIX D:/prog/cpp/GameProject/Engine)
+set(THOR_ROOT D:/Thor/install)
+set(SFML_ROOT D:/SFML/install)
 
-set(SFML_DIR "D:/SFML/install/lib/cmake/SFML")
+#-----------------------------------------------------
+set(SFML_DIR ${SFML_DIR}/lib/cmake/SFML)
+set(SFML_INCLUDE_DIR ${SFML_ROOT}/include)
 
-set(THOR_ROOT "D:/Thor/install")
+file(GLOB THOR_LIBS ${THOR_ROOT}/lib/*.lib)
+file(GLOB THOR_DLLS ${THOR_ROOT}/bin/*.dll)
+file(GLOB SFML_LIBS ${SFML_ROOT}/lib/*.lib)
+file(GLOB SFML_DLLS ${SFML_ROOT}/bin/*.dll)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${THOR_ROOT}/cmake/Modules)
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+file(GLOB_RECURSE SCENE_SOURCES "src/Private/Scene//*.cpp" "src/Public/Scene//*.h")
+file(GLOB_RECURSE GAME_SOURCES "src/Private/Game//*.cpp" "src/Public/Game//*.h")
+file(GLOB_RECURSE MAIN_SOURCES "src/Private/Main//*.cpp" "src/Public/Main//*.h")
 
-add_executable(Main src/main.cpp ${sources} ${headers})
+add_library(Game SHARED ${GAME_SOURCES})
+add_library(Scene SHARED ${SCENE_SOURCES})
+add_executable(Main WIN32 ${MAIN_SOURCES})
 
-find_package(SFML 2.5 COMPONENTS system window graphics network audio REQUIRED)
-
+find_package(SFML 2.5 COMPONENTS system window graphics audio REQUIRED)
 find_package(Thor 2 MODULE REQUIRED)
 
-target_link_libraries(Main sfml-system sfml-window sfml-graphics sfml-network sfml-audio ${THOR_LIBRARY})
+target_link_libraries(Scene PRIVATE sfml-system PRIVATE sfml-window PRIVATE sfml-graphics PRIVATE sfml-audio PRIVATE ${THOR_LIBRARY})
+target_include_directories(Scene PUBLIC ${THOR_INCLUDE_DIR})
+target_include_directories(Scene PUBLIC src/Public)
 
-target_include_directories(Main PUBLIC ${SFML_INCLUDE_PATH})
+target_link_libraries(Game PUBLIC Scene)
+target_include_directories(Game PUBLIC ${SFML_INCLUDE_DIR})
+target_include_directories(Game PUBLIC ${THOR_INCLUDE_DIR})
+target_include_directories(Game PUBLIC src/Public)
 
+target_link_libraries(Main PRIVATE sfml-system PRIVATE sfml-window PRIVATE sfml-graphics PRIVATE sfml-audio PRIVATE Game PRIVATE Scene )
+target_include_directories(Main PUBLIC ${SFML_INCLUDE_DIR})
 target_include_directories(Main PUBLIC ${THOR_INCLUDE_DIR})
+target_include_directories(Main PUBLIC src/Public)
 
-target_include_directories(Main PRIVATE src/Private PUBLIC src/Public)
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/src FILES ${SCENE_SOURCES} ${GAME_SOURCES} ${MAIN_SOURCES})
 
-source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/src FILES ${sources} ${headers})
+install(DIRECTORY ${SFML_INCLUDE_DIR}/SFML ${THOR_INCLUDE_DIR}/Thor ${THOR_INCLUDE_DIR}/Aurora src/Public DESTINATION ${CMAKE_INSTALL_PREFIX}/include)
+install(FILES ${THOR_LIBS} ${SFML_LIBS} DESTINATION ${CMAKE_INSTALL_PREFIX}/include/libs)
+install(FILES ${THOR_DLLS} ${SFML_DLLS} DESTINATION ${CMAKE_INSTALL_PREFIX})
+install(DIRECTORY src/Private/Game/ DESTINATION ${CMAKE_INSTALL_PREFIX})
+install(TARGETS Game Scene Main DESTINATION ${CMAKE_INSTALL_PREFIX})

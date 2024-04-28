@@ -163,10 +163,10 @@ void SceneController::ShowBackground(const std::string& bg_name, float fade_time
 	}
 }
 
-void SceneController::SetBackgroundColor(const sf::Color& color, float fade_time)
+void SceneController::SetBackgroundColor(const ColorWrapper& color, float fade_time)
 {
 	SceneSprite& bg = Backgrounds.front();
-	SetTextureColor(bg.GetSFMLTexture(), color);
+	SetTextureColor(bg.GetSFMLTexture(), color.ToSFMLColor());
 
 	if (fade_time > 0) {
 		Background.first = Background.second;
@@ -346,7 +346,7 @@ void SceneController::SetTextureColor(sf::Texture& texture, const sf::Color& col
 	delete[] pixels;
 }
 
-GUI::DialogBox& SceneController::SetupDialogBox(const sf::Vector2f& size_percent, const sf::Vector2f& position_percent, float corner_radius, const sf::Color& background_color, float outline_thickness, const sf::Color& outline_color)
+void SceneController::SetupDialogBox(const sf::Vector2f& size_percent, const sf::Vector2f& position_percent, float corner_radius, const ColorWrapper& background_color, float outline_thickness, const ColorWrapper& outline_color)
 {
 	sf::Vector2f size(Options.width * size_percent.x / 100.f, Options.height * size_percent.y / 100.f);
 	
@@ -354,10 +354,8 @@ GUI::DialogBox& SceneController::SetupDialogBox(const sf::Vector2f& size_percent
 		static_cast<float>((Options.width * position_percent.x) / 100.f) - (size.x/2),
 		static_cast<float>((Options.height) - (static_cast<float>(Options.height * position_percent.y) / 100.f) - (size.y / 2)));
 
-	DialogBox.SetBackgroundShape(size, tpos, corner_radius, background_color, outline_thickness, outline_color);
+	DialogBox.SetBackgroundShape(size, tpos, corner_radius, background_color.ToSFMLColor(), outline_thickness, outline_color.ToSFMLColor());
 	DialogBox.SetFont(TextFont);
-
-	return DialogBox;
 }
 
 void SceneController::SetText(const std::wstring& text, const std::wstring& name, bool print_anim)
@@ -375,6 +373,26 @@ void SceneController::SetChoices(const std::vector<std::wstring>& options)
 unsigned int SceneController::GetCurrentResponse()
 {
 	return DialogBox.GetSelectedResponse();
+}
+
+void SceneController::SetDialogBoxTextColor(const ColorWrapper& color)
+{
+	DialogBox.SetTextColor(color.ToSFMLColor());
+}
+
+void SceneController::SetDialogBoxHoverTextColor(const ColorWrapper& color)
+{
+	DialogBox.SetTextHoverColor(color.ToSFMLColor());
+}
+
+void SceneController::SetDialogBoxCharSize(float text_size, float name_size)
+{
+	DialogBox.SetCharacterSize(text_size, name_size);
+}
+
+void SceneController::SetDialogBoxPrintTime(float time_milsec)
+{
+	DialogBox.SetTimeToAddChar(time_milsec);
 }
 
 void SceneController::ShowDialogBox()
@@ -492,3 +510,8 @@ void SceneController::StopAllChannels()
 	}
 }
 
+sf::Color ColorWrapper::ToSFMLColor() const
+{
+	sf::Color cl = sf::Color(r, g, b, a);
+	return cl;
+}

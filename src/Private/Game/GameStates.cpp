@@ -1,5 +1,5 @@
-#include "GameStates.h"
-#include <Scene/SceneController.h>
+#include "Game/GameStates.h"
+#include "Scene/SceneController.h"
 
 #include <string>
 #include <cassert>
@@ -15,6 +15,7 @@ void GameStates::GetConfigOptions(ConfigOptions& opts)
 	opts.width = 1024;
 	opts.title = "Test";
 	opts.main_font = "script.ttf";
+	// GET FROM PYTHON AND SET INTO CMAKELISTS
 	opts.content_folders = {
 		"/game/audio",
 		"/game/audio/sounds",
@@ -32,9 +33,9 @@ void GameStates::StartGame()
 {
 	assert(Scene && "Scene is nullptr");
 
-	auto& db = Scene->SetupDialogBox(sf::Vector2f(90, 30), sf::Vector2f(50, 15), 2.0f, sf::Color::Black, 3.0f, sf::Color(32.f, 115.f, 49.f));
-	db.SetCharacterSize(27.0f, 35.0f);
-	db.SetTextColor(sf::Color(32.f, 115.f, 49.f));
+	Scene->SetupDialogBox(sf::Vector2f(90, 30), sf::Vector2f(50, 15), 2.0f, ColorWrapper::Black, 3.0f, ColorWrapper(32.f, 115.f, 49.f, 255));
+	Scene->SetDialogBoxCharSize(27.0f, 35.0f);
+	Scene->SetDialogBoxTextColor(ColorWrapper(32.f, 115.f, 49.f, 255));
 
 	Scene->AddBackground("2", "2.png");
 
@@ -69,7 +70,7 @@ void GameStates::StartNovel()
 
 void GameStates::GoToMainMenu()
 {
-	Scene->SetBackgroundColor(sf::Color::White);
+	Scene->SetBackgroundColor(ColorWrapper::White);
 	Scene->StopAllChannels();
 	Scene->HideAllSprites();
 	Scene->HideDialogBox();
@@ -123,7 +124,7 @@ void GameStates::NextStatement()
 		}
 		case 2:
 		{	
-			Scene->SetBackgroundColor(sf::Color::White, 2.0f);
+			Scene->SetBackgroundColor(ColorWrapper::White, 2.0f);
 
 			Scene->SetText(L"как сам чел", L"власов", true);
 
@@ -158,7 +159,7 @@ void GameStates::NextStatement()
 
 			Scene->SetChoices({ L"роа", L"упа" });
 
-			Scene->SetBackgroundColor(sf::Color::White);
+			Scene->SetBackgroundColor(ColorWrapper::White);
 			
 			frame++;
 
